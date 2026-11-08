@@ -1,0 +1,19 @@
+# Credits
+
+ADVENT: Resurrected builds on the work of others. This file lists the third-party assets and their licenses.
+
+## Font: VT323
+
+- Typeface: **VT323**
+- Author: Peter Hull (The VT323 Project Authors), copyright 2011
+- License: **SIL Open Font License, Version 1.1** (OFL)
+- Bundled in this repository: the font file is `public/fonts/VT323-Regular.woff2` (Latin subset, weight 400), and the full license text is `public/fonts/OFL.txt`, next to it. The font is served from the same origin as the page.
+- License source: https://raw.githubusercontent.com/google/fonts/main/ofl/vt323/OFL.txt (copied unchanged)
+- Font file source: the npm package `@fontsource/vt323@5.3.0`, file `files/vt323-latin-400-normal.woff2`, copied unchanged and renamed. The package is not a dependency of this project.
+
+## Game data and logic: Open Adventure
+
+- The game text, map and object data (`original/adventure.yaml`) and the game logic ported to TypeScript come from **Open Adventure** (https://gitlab.com/esr/open-adventure), licensed under the **BSD 2-Clause License**.
+- Copyright (C) 1977, 2005 by Will Crowther and Don Woods; YAML conversion and maintenance by Eric S. Raymond.
+- Open Adventure is a forward-port of *Adventure 2.5* (1995) by Will Crowther and Don Woods, the last version of the original *Colossal Cave Adventure* written by its original authors. The original authors gave permission and encouragement for this release.
+- See `original/ATTRIBUTION.md` for details and `original/COPYING` for the license text.

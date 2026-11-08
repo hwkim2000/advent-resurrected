@@ -1,0 +1,11 @@
+#!/bin/sh
+#
+# Filter the output from Open Adventure versions to make it compatible with
+# the filtered versions of logs made from advent430.
+sed \
+    -e '/bridge now spans the fissure/s//bridge spans the fissure/' \
+    -e '/ground/s//surface/' \
+    -e '/floor/s//surface/' \
+    -e "/Well, that was remarkably pointless!/s//What's the matter, can't you read?  Now you'd best start over./" \
+
+# end

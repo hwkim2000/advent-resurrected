@@ -1,0 +1,28 @@
+#!/bin/sh
+#
+# Filter the output from advent430 to make it compatible with
+# newer ones
+sed \
+    -e '/ *$/s///' \
+    -e '/bridge now spans the fissure/s//bridge spans the fissure/' \
+    -e '/imbedded/s//embedded/' \
+    -e '/persian/s//Persian/' \
+    -e '/swiss/s//Swiss/' \
+    -e '/eying/s//eyeing/' \
+    -e '/threshhold/s//threshold/' \
+    -e '/AXE/s//axe/' \
+    -e '/BAR/s//bar/' \
+    -e '/BOO/s//boo/' \
+    -e '/DOING/s//doing/' \
+    -e '/EW/s//ew/' \
+    -e '/FROB/s//frob/' \
+    -e '/GRATE/s//grate/' \
+    -e '/NAGGING/s//nagging/' \
+    -e '/RUB/s//rub/' \
+    -e '/SOMETHING/s//something/' \
+    -e '/ground/s//surface/' \
+    -e '/floor/s//surface/' \
+
+
+#end
+    

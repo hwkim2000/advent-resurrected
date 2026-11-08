@@ -1,0 +1,12 @@
+# This image is built by the Gitlab CI pipeline to be used in subsequent
+# pipeline steps.
+# SPDX-FileCopyrightText: (C) Eric S. Raymond <esr@thyrsus.com>
+# SPDX-License-Identifier: BSD-2-Clause
+
+FROM ubuntu
+
+ # tell apt not to ask for any user input
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update
+RUN apt-get install --yes --no-install-recommends make gcc libedit-dev libasan6 libubsan1 python3 python3-yaml lcov asciidoctor libxslt1.1 pkg-config docbook-xml xsltproc

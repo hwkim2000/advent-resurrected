@@ -1,0 +1,32 @@
+{
+  "source": "reference/open-adventure/make_dungeon.py (commit e6160529e70a8c7a06b9a5f190d69aa35c4c62f5)",
+  "counts": {
+    "locations": 185,
+    "objects": 70,
+    "hints": 10,
+    "classes": 11,
+    "deaths": 3,
+    "thresholds": 4,
+    "motions": 76,
+    "actions": 58,
+    "travel": 878,
+    "keys": 185,
+    "arbitraryMessages": 213,
+    "dwarves": 6,
+    "birdEndstate": 5,
+    "maxState": 3
+  },
+  "ignore": "LXGZI",
+  "dwarflocs": [
+    19,
+    27,
+    33,
+    44,
+    64,
+    114
+  ],
+  "travelDumpSha256": "d2cf0cc1d0b327d543213a6e860bfa43ba71becfcf8e6fbdc7d9af7df7370b2f",
+  "travelSha256": "fe4fb9492dd02b3edc6dae8ec6a3b79741e74cfb590673d2a5373e2ccaa0aef3",
+  "tkeySha256": "053d74ef3684bd75945e678fee069e1d47b23dc4a1783b5b08dbde68d5e0a926",
+  "conditionsSha256": "e5232600c6711fa1333ba4d95f429aef812d60fcef34eb36f6884390e3ef7f41"
+}

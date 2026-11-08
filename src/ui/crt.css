@@ -1,0 +1,364 @@
+/*
+ * ADVENT: Resurrected - green phosphor CRT look.
+ * All CRT effects are CSS only. Tokens in :root are read by tests/ui/css-assets.test.ts.
+ * VT323 by Peter Hull, SIL Open Font License 1.1 (see public/fonts/OFL.txt and CREDITS.md).
+ */
+
+:root {
+  --fg: #33ff66;
+  --bg: #020a04;
+  --fg-dim: #1fae45;
+  --focus: #ffd54f;
+  --narrator: #e0c060;
+  --font: "VT323", "Courier New", Courier, monospace;
+  --scanline-period: 3px; /* must stay in [2px, 4px] */
+  --flicker-opacity: 0.96; /* >= 0.95, so luminance change <= 5% */
+  --flicker-duration: 0.5s; /* 2 cycles per second */
+  --blink-duration: 1s; /* in [0.8s, 1.2s] */
+  --text-size: clamp(18px, 2.4vw, 26px);
+  --vignette-end: 0.55;
+  --screen-radius: 3% / 4%;
+  --screen-pad: max(1rem, 3%);
+  color-scheme: dark;
+}
+
+@font-face {
+  font-family: "VT323";
+  src: url("/fonts/VT323-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
+  background: #000;
+  color: var(--fg);
+  font-family: var(--font);
+  font-size: var(--text-size);
+  line-height: 1.15;
+}
+
+input,
+button,
+select {
+  font-family: var(--font);
+}
+
+/* ---------- Layout ---------- */
+
+.app {
+  position: fixed;
+  inset: 0;
+  top: var(--vv-top, 0);
+  height: var(--vv-height, 100dvh);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 0.5rem;
+  background: #000;
+}
+
+.crt {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: var(--screen-pad);
+  background: var(--bg);
+  color: var(--fg);
+  border-radius: var(--screen-radius);
+  overflow: hidden;
+  text-shadow: 0 0 4px currentColor, 0 0 10px rgba(51, 255, 102, 0.35);
+  box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8), inset 0 0 120px rgba(0, 0, 0, 0.5),
+    0 0 0 4px #0b130d;
+  animation: flicker var(--flicker-duration) infinite;
+}
+
+/* Scanlines */
+.crt::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.22) 0 1px,
+    transparent 1px var(--scanline-period)
+  );
+}
+
+/* Vignette */
+.crt::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  pointer-events: none;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, var(--vignette-end)) 100%);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.8rem;
+  flex: none;
+  padding: 0 0 0.5rem;
+  font-size: max(16px, 0.8em);
+  text-shadow: none;
+}
+
+.controls [role="radiogroup"] {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.controls label {
+  color: var(--fg-dim);
+}
+
+.controls button,
+.controls select,
+.controls a {
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--fg-dim);
+  border-radius: 2px;
+  padding: 0.1em 0.5em;
+  font-size: inherit;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.controls button[aria-checked="true"],
+.controls button[aria-pressed="true"] {
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.controls button:hover,
+.controls select:hover,
+.controls a:hover {
+  border-color: var(--fg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* ---------- Transcript ---------- */
+
+#transcript,
+.transcript {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--fg-dim) var(--bg);
+}
+
+.line {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: var(--font);
+}
+
+/* Blank lines keep their height without changing textContent. */
+.line:empty::before {
+  content: "\200b";
+}
+
+.line--original {
+  color: var(--fg);
+}
+
+.line--input {
+  color: var(--fg);
+}
+
+.line--notice {
+  color: var(--fg-dim);
+  font-style: normal;
+}
+
+.line--boot {
+  color: var(--fg-dim);
+}
+
+.line--narrator {
+  color: var(--narrator);
+  text-shadow: 0 0 4px currentColor;
+  border-left: 3px solid var(--narrator);
+  padding-left: 0.6em;
+  opacity: 0.9;
+}
+
+/* ---------- Input line and block cursor ---------- */
+
+.input-line {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+  padding-top: 0.25rem;
+}
+
+.prompt {
+  flex: none;
+  white-space: pre;
+}
+
+.input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.input-line input,
+#input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  outline: none;
+  background: transparent;
+  color: var(--fg);
+  caret-color: transparent; /* the block cursor below replaces the native caret */
+  font-family: var(--font);
+  font-size: max(16px, 1em); /* >= 16px so iOS Safari does not zoom on focus */
+  line-height: 1.15;
+  text-shadow: inherit;
+  letter-spacing: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.input-line input:disabled {
+  opacity: 0.5;
+}
+
+/* Solid block, positioned by script from selectionStart in ch units (style.left). */
+.cursor {
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  width: 1ch;
+  height: 1em;
+  background: var(--fg);
+  box-shadow: 0 0 6px var(--fg);
+  pointer-events: none;
+  animation: blink var(--blink-duration) steps(1) infinite;
+}
+
+/* Keep keyboard users able to see focus on the input even though the caret is hidden. */
+.input-line input:focus-visible {
+  outline: none;
+}
+
+/* ---------- Keyframes ---------- */
+
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: var(--flicker-opacity);
+  }
+}
+
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* ---------- Helpers ---------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Narrow screens: weaker curvature and vignette ---------- */
+
+@media (max-width: 599px) {
+  :root {
+    --vignette-end: 0.25;
+    --screen-radius: 1% / 1.5%;
+    --screen-pad: max(1.25rem, 5%);
+  }
+
+  .app {
+    padding: 0.25rem;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .crt,
+  .crt::before,
+  .crt::after,
+  .cursor {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .cursor {
+    opacity: 1;
+  }
+}
+
+/* ---------- CRT effects off: plain green text on a plain dark background ---------- */
+
+html[data-crt="off"] .crt {
+  animation: none;
+  border-radius: 0;
+  box-shadow: none;
+  text-shadow: none;
+  background: var(--bg);
+}
+
+html[data-crt="off"] .crt::before,
+html[data-crt="off"] .crt::after {
+  content: none;
+  display: none;
+}
+
+html[data-crt="off"] .cursor {
+  box-shadow: none;
+}
+
+html[data-crt="off"] .line--narrator {
+  text-shadow: none;
+}

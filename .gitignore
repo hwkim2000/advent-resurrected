@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.env
+.env.*
+*.log
+!reference/open-adventure/tests/*.log
+.DS_Store
+Thumbs.db
+# NOTE: never ignore .kiro/ (required by Kiroween rules)
+.vitest/

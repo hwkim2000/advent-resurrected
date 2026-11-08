@@ -1,0 +1,30 @@
+= Installing Open Adventure =
+// SPDX-FileCopyrightText: (C) Eric S. Raymond <esr@thyrsus.com>
+// SPDX-License-Identifier: CC-BY-4.0
+
+Installation now requires Python3 due to a security issue
+with the YAML library.
+
+1. Install libedit from http://thrysoee.dk/editline/ (aka: editline)
+on your system.
++
+On Debian and Ubuntu: `apt-get install libedit-dev`.
++
+On Fedora: `dnf install libedit-devel`.
++
+On openSUSE Tunbleweed: `zypper libedit-devel`
++
+You must also use pip to install PyYAML: `pip3 install PyYAML`.
+On openSUSE Tunbleweed: `zypper in python3-PyYAML`.
+
+2. Change to the top-level directory of the source code (e.g., `cd open-adventure`).
+
+3. Build with `make`.
+
+4. Optionally run a regression test on the code with `make check`.
+   For best results, have pylint and cppcheck and spellcheck installed.
+
+5. Run `./advent` to play.
+
+6. If you want to buld the documentation you will need asciidoctor.
+

@@ -1,0 +1,30 @@
+{
+  "name": "advent-resurrected",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "ADVENT: Resurrected - a haunted resurrection of the 1976 text adventure",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run typecheck && vite build",
+    "preview": "vite preview",
+    "check:dist": "tsx scripts/check-dist.ts",
+    "gen:data": "tsx scripts/generate-data.ts",
+    "play": "tsx cli/advent-cli.ts",
+    "test": "vitest --run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "fast-check": "4.10.2",
+    "happy-dom": "21.0.4",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "vite": "8.3.6",
+    "vitest": "5.1.0",
+    "yaml": "2.9.1"
+  }
+}

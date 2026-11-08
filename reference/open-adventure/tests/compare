@@ -1,0 +1,4 @@
+#! /bin/sh
+# Display diff for an individual test
+test=$1
+../advent <${test}.log | ./tapdiffer "${test}" "${test}.chk"

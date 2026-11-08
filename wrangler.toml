@@ -1,0 +1,5 @@
+# Cloudflare Pages configuration. Non-secret values only.
+# No account ID, token or secret belongs in this file.
+name = "advent-resurrected"
+pages_build_output_dir = "./dist"
+compatibility_date = "2025-01-01"

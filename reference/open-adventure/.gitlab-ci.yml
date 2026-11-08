@@ -1,0 +1,104 @@
+# SPDX-FileCopyrightText: (C) Eric S. Raymond
+# SPDX-License-Identifier: BSD-2-Clause
+stages:
+  - ci-build
+  - build
+  - test
+  - deploy
+
+default:
+  image: $CI_REGISTRY_IMAGE:ci
+
+# build and push Docker image to be used in subsequent steps
+ci-build:
+  stage: ci-build
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context $CI_PROJECT_DIR --dockerfile $CI_PROJECT_DIR/Dockerfile.ci --destination $CI_REGISTRY_IMAGE:ci --cache=true
+
+# build advent itself
+binary:debug:
+  stage: build
+  script:
+    - make debug
+  artifacts:
+    paths:
+      - advent
+      - cheat
+      - "*.o"
+      - dungeon.c
+      - dungeon.h
+
+binary:release:
+  stage: build
+  script:
+    - make advent cheat
+  artifacts:
+    paths:
+      - advent
+      - cheat
+      - "*.o"
+      - dungeon.c
+      - dungeon.h
+
+manpage:
+  stage: build
+  script:
+    - make advent.6
+  artifacts:
+    paths:
+      - advent.6
+
+html:
+  stage: build
+  script:
+    - make html
+  artifacts:
+    paths:
+      - "*.html"
+
+dist:
+  stage: build
+  script:
+    - export VERS=${CI_COMMIT_REF_NAME}
+    - make dist -e
+  artifacts:
+    paths:
+      - "*.tar.gz"
+
+# run tests using the binary built before
+test:debug:
+  stage: test
+  script:
+    - make coverage
+  artifacts:
+    paths:
+      - coverage
+  dependencies:
+    - binary:debug
+
+test:release:
+  stage: test
+  script:
+    - cd tests
+    - make
+    - cd ..
+  dependencies:
+    - binary:release
+
+pages:
+  stage: deploy
+  script:
+    - mkdir public
+    - mv coverage public
+  artifacts:
+    paths:
+      - public
+  only:
+    - master
+  dependencies:
+    - test:debug

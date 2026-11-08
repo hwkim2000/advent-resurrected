@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#000000" />
+    <title>ADVENT: Resurrected</title>
+    <link rel="stylesheet" href="/src/ui/crt.css" />
+  </head>
+  <body>
+    <div class="app">
+      <main class="crt" id="screen">
+        <header class="controls" id="controls" aria-label="Settings"></header>
+        <div id="transcript" class="transcript" role="log" aria-label="Game transcript"></div>
+        <div class="input-line">
+          <span class="prompt" id="prompt" aria-hidden="true">&gt; </span>
+          <div class="input-wrap">
+            <input
+              id="input"
+              type="text"
+              maxlength="1023"
+              autocapitalize="off"
+              autocorrect="off"
+              autocomplete="off"
+              spellcheck="false"
+              enterkeyhint="send"
+              aria-label="Type your command"
+            />
+            <span class="cursor" id="cursor" aria-hidden="true"></span>
+          </div>
+        </div>
+        <div id="live" class="sr-only" aria-live="polite" aria-atomic="false"></div>
+        <noscript>
+          <p class="line line--notice">THIS PROGRAM NEEDS JAVASCRIPT TO RESURRECT.</p>
+        </noscript>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

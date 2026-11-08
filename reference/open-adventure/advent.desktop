@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: (C) Eric S. Raymond <esr@thyrsus.com>
+# SPDX-License-Identifier: BSD-2-Clause
+[Desktop Entry]
+Type=Application
+Name=Open Adventure
+Comment=Colossal Cave Adventure, the 1995 430-point version
+Icon=advent
+Exec=advent
+Terminal=true
+Categories=Game;AdventureGame;ConsoleOnly

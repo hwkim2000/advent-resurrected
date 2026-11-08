@@ -1,0 +1,4 @@
+# Upstream reference files must stay byte-exact (LF) so .chk comparisons work.
+reference/** -text
+original/** -text
+public/fonts/** -text

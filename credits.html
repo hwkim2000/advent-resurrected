@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#000000" />
+    <title>Credits - ADVENT: Resurrected</title>
+    <link rel="stylesheet" href="/src/ui/crt.css" />
+  </head>
+  <body>
+    <div class="app">
+      <main class="crt" id="screen">
+        <header class="controls">
+          <a href="/">Back to the game</a>
+        </header>
+        <div class="transcript" id="credits" tabindex="0" role="region" aria-label="Credits and licences">
+          <pre class="line line--original" id="credits-text"></pre>
+        </div>
+        <noscript>
+          <p class="line line--notice">THIS PAGE NEEDS JAVASCRIPT TO SHOW THE CREDITS.</p>
+        </noscript>
+      </main>
+    </div>
+    <script type="module" src="/src/ui/dom/credits-page.ts"></script>
+  </body>
+</html>
