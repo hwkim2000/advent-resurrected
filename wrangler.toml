@@ -10,9 +10,8 @@ binding = "AI"
 [[d1_databases]]
 binding = "DB"
 database_name = "advent-gate"
-# PLACEHOLDER id (all zeros). OWNER STEP: after `wrangler d1 create advent-gate`,
-# replace it with the real database id. It is an identifier, not a secret.
-database_id = "00000000-0000-0000-0000-000000000000"
+# Real id from `wrangler d1 create advent-gate` (2026-11-09).
+database_id = "add0af84-28a8-4d3e-acc8-75779dd33cb3"
 migrations_dir = "migrations"
 
 [vars]
