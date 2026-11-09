@@ -17,6 +17,12 @@ import { installInputLine } from './ui/dom/input-line';
 import { TerminalView, findTerminalElements } from './ui/dom/terminal-view';
 import { installViewportTracking } from './ui/dom/viewport';
 
+import { createHauntedStartLoader } from './ai-loader';
+import type { AiParserModule } from './ai-loader';
+
+/** The only reference to src/parser: a dynamic import, so the chunk is split out. */
+const loadParserModule = (): Promise<AiParserModule> => import('./parser/browser');
+
 function main(): void {
   const els = findTerminalElements();
   const cursor = document.getElementById('cursor');
@@ -49,6 +55,8 @@ function main(): void {
 
   const log = createLogger();
   const hooks = new ExtensionHooks(log);
+  // The AI parser chunk loads only when a Haunted game starts (never in 1976 mode).
+  const onGameStart = createHauntedStartLoader(() => controller, log, loadParserModule);
   const ctl = new GameController({
     kv,
     clock: createClock(),
@@ -57,6 +65,7 @@ function main(): void {
     hooks,
     log,
     confirm: (message) => window.confirm(message),
+    onGameStart,
   });
   controller = ctl;
   if (degradedEarly) ctl.notifyStorageDegraded();

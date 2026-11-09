@@ -6,6 +6,7 @@
 import { newGame, start, step } from '../engine/index';
 import type { Env, GameState, OutputEvent } from '../engine/index';
 import {
+  AUTOSAVE_LINE_KINDS,
   AUTOSAVE_MAX_LINES,
   clearAutosave,
   loadAutosave,
@@ -14,6 +15,7 @@ import {
 import { BOOT_CPS, selectBoot } from './boot-script';
 import { lastPromptOf, originalTextOf, splitIntoLines } from './event-render';
 import type { ExtensionHooks, HookContext } from './extension-hooks';
+import type { GamePhase, InputResolver, ResolveContext, TranslateOutcome } from './input-resolver';
 import {
   emptyHistory,
   parseHistory,
@@ -40,7 +42,7 @@ import type {
   TerminalPort,
 } from './types';
 
-export type Phase = 'booting' | 'ready' | 'over' | 'failed';
+export type Phase = GamePhase;
 
 export interface ControllerDeps {
   /** ResilientStore in production. */
@@ -54,6 +56,11 @@ export interface ControllerDeps {
   confirm?: (message: string) => boolean;
   /** Informational: called after the degraded-storage notice has been shown. */
   onDegradedStorage?: () => void;
+  /**
+   * Called whenever a game becomes active (boot-time new game, autosave restore,
+   * New Game) with the running game's mode (the restored game's own mode on restore).
+   */
+  onGameStart?: (gameMode: Mode) => void;
 }
 
 export const NOTICE_ENGINE_ERROR = '?SYSTEM ERROR - COMMAND IGNORED';
@@ -64,6 +71,18 @@ export const NOTICE_GAME_OVER = 'GAME OVER. PRESS ENTER OR CHOOSE NEW GAME TO PL
 export const NOTICE_SAVED = 'SESSION SAVED. START A NEW GAME, THEN USE RESUME TO LOAD IT.';
 export const NOTICE_FAILED = '?SYSTEM ERROR - RELOAD THE PAGE';
 export const CONFIRM_NEW_GAME = 'START A NEW GAME? THE CURRENT GAME WILL BE LOST.';
+export const NOTICE_AI_OFFLINE = 'THE SPIRITS ARE NOT ANSWERING. CLASSIC PARSER IN USE.';
+export const PENDING_INDICATOR_MS = 400;
+export const RESOLUTION_WATCHDOG_MS = 10_000;
+
+interface Resolution {
+  token: number;
+  line: string;
+  stateAtStart: GameState;
+  abort: AbortController;
+  startedAtTick: number | undefined;
+  pendingShown: boolean;
+}
 
 const MAX_LINE_CHARS = 1023;
 const DEFAULT_PROMPT: PromptInfo = { kind: 'command', text: '' };
@@ -86,6 +105,9 @@ export class GameController {
   private lastNow = 0;
   private lastBusy = false;
   private storageNoticeShown = false;
+  private resolver: InputResolver | undefined;
+  private resolving: Resolution | undefined;
+  private nextToken = 0;
 
   readonly history: {
     up(typed: string): string;
@@ -109,6 +131,10 @@ export class GameController {
       },
       onRevealed: (b) => {
         if (b.kind === 'boot') return;
+        if (b.kind === 'translation') {
+          deps.view.announceInterpretation(b.text.trim());
+          return;
+        }
         deps.hooks.notifyOutput({ text: b.text, kind: b.kind }, this.ctx());
         deps.view.announce(b.text);
       },
@@ -183,9 +209,39 @@ export class GameController {
     this.run(() => this.teletype.flush());
   }
 
+  /** Installs (or removes) the asynchronous input resolver; the AI parser in Haunted mode. */
+  setInputResolver(r: InputResolver | undefined): void {
+    this.resolver = r;
+  }
+
   tick(nowMs: number): void {
     this.lastNow = nowMs;
     this.teletype.tick(nowMs);
+    this.tickResolution(nowMs);
+  }
+
+  private tickResolution(nowMs: number): void {
+    const r = this.resolving;
+    if (r === undefined) return;
+    if (r.startedAtTick === undefined) {
+      r.startedAtTick = nowMs;
+      return;
+    }
+    const elapsed = nowMs - r.startedAtTick;
+    if (elapsed >= RESOLUTION_WATCHDOG_MS) {
+      this.deps.log.error('input resolution timed out', undefined);
+      this.run(() => {
+        if (this.resolving !== r) return;
+        this.finishResolution(r);
+        r.abort.abort();
+        this.deliver(r.line, r.line);
+      });
+      return;
+    }
+    if (elapsed >= PENDING_INDICATOR_MS && !r.pendingShown) {
+      r.pendingShown = true;
+      this.deps.view.showPending();
+    }
   }
 
   /** One submitted line; queued while the boot or earlier output is pending. */
@@ -194,6 +250,7 @@ export class GameController {
     const line = raw.length > MAX_LINE_CHARS ? raw.slice(0, MAX_LINE_CHARS) : raw;
     if (
       this.working ||
+      this.resolving !== undefined ||
       this.phaseValue === 'booting' ||
       this.teletype.busy ||
       this.queue.length > 0
@@ -263,7 +320,7 @@ export class GameController {
 
   /** Starts the game once the boot is revealed, then delivers queued lines in order. */
   private idleCheck(): void {
-    while (!this.working && !this.teletype.busy) {
+    while (!this.working && !this.teletype.busy && this.resolving === undefined) {
       if (this.phaseValue === 'booting') {
         if (!this.bootQueued) break;
         this.bootQueued = false;
@@ -310,9 +367,24 @@ export class GameController {
       this.notice(NOTICE_RESUMING);
       this.deps.view.setPrompt(this.prompt);
       this.deps.view.showMode(this.current.mode, this.gameMode);
+      this.announceGameStart();
+      this.safeVoid(() => this.resolver?.startGame());
       return;
     }
     this.newGameStart();
+    this.announceGameStart();
+    this.safeVoid(() => this.resolver?.startGame());
+  }
+
+  /** Tells the host which mode the now-running game has; no-op if no game is running. */
+  private announceGameStart(): void {
+    const mode = this.gameMode;
+    if (mode === undefined) return;
+    try {
+      this.deps.onGameStart?.(mode);
+    } catch (e) {
+      this.deps.log.error('game start hook failed', e);
+    }
   }
 
   private newGameStart(): void {
@@ -334,6 +406,11 @@ export class GameController {
   }
 
   private startFresh(): void {
+    const pending = this.resolving;
+    if (pending !== undefined) {
+      this.finishResolution(pending);
+      pending.abort.abort();
+    }
     this.teletype.flush();
     this.queue.length = 0;
     clearAutosave(this.kv);
@@ -342,6 +419,16 @@ export class GameController {
     this.state = undefined;
     this.hist = { entries: this.hist.entries, pos: null, draft: '' };
     this.newGameStart();
+    this.announceGameStart();
+    this.safeVoid(() => this.resolver?.startGame());
+  }
+
+  private safeVoid(fn: () => void): void {
+    try {
+      fn();
+    } catch (e) {
+      this.deps.log.error('input resolver failed', e);
+    }
   }
 
   private processLine(line: string): void {
@@ -362,7 +449,111 @@ export class GameController {
     const before = this.state;
     if (before === undefined) return;
     this.echo(line);
-    const transformed = this.deps.hooks.transformInput(line, this.ctx());
+
+    const resolver = this.resolver;
+    if (resolver !== undefined) {
+      const ctx = this.resolveContext();
+      if (
+        ctx.gameMode === 'haunted' &&
+        ctx.promptKind === 'command' &&
+        ctx.phase === 'ready' &&
+        this.guarded(() => resolver.needsTranslation(line, ctx), false)
+      ) {
+        this.beginResolution(resolver, line, before, ctx);
+        return;
+      }
+    }
+    this.deliver(line, line);
+  }
+
+  private guarded<T>(fn: () => T, fallback: T): T {
+    try {
+      return fn();
+    } catch (e) {
+      this.deps.log.error('input resolver failed', e);
+      return fallback;
+    }
+  }
+
+  private resolveContext(): ResolveContext {
+    return {
+      gameMode: this.gameMode,
+      promptKind: this.prompt.kind,
+      phase: this.phaseValue,
+      state: this.state,
+    };
+  }
+
+  private beginResolution(
+    resolver: InputResolver,
+    line: string,
+    stateAtStart: GameState,
+    ctx: ResolveContext,
+  ): void {
+    const r: Resolution = {
+      token: ++this.nextToken,
+      line,
+      stateAtStart,
+      abort: new AbortController(),
+      startedAtTick: undefined,
+      pendingShown: false,
+    };
+    this.resolving = r;
+    let promise: Promise<TranslateOutcome>;
+    try {
+      promise = resolver.translate(line, ctx, r.abort.signal);
+    } catch (e) {
+      promise = Promise.reject(e);
+    }
+    promise.then(
+      (outcome) => this.onResolved(r.token, outcome),
+      (e: unknown) => this.onResolveFailed(r.token, e),
+    );
+  }
+
+  private finishResolution(r: Resolution): void {
+    if (this.resolving !== r) return;
+    this.resolving = undefined;
+    if (r.pendingShown) this.deps.view.hidePending();
+  }
+
+  private onResolved(token: number, outcome: TranslateOutcome): void {
+    const r = this.resolving;
+    if (r === undefined || r.token !== token) return;
+    this.run(() => {
+      this.finishResolution(r);
+      if (this.phaseValue === 'failed') return;
+      if (this.prompt.kind !== 'command' || this.state !== r.stateAtStart) {
+        this.deliver(r.line, r.line);
+        return;
+      }
+      if (outcome.kind === 'translated') {
+        this.emit('translation', outcome.command + '\n');
+        this.deliver(r.line, outcome.command);
+        return;
+      }
+      if (outcome.notice) this.notice(NOTICE_AI_OFFLINE);
+      this.deliver(r.line, r.line);
+    });
+  }
+
+  private onResolveFailed(token: number, e: unknown): void {
+    const r = this.resolving;
+    if (r === undefined || r.token !== token) return;
+    this.deps.log.error('input resolution failed', e);
+    this.run(() => {
+      this.finishResolution(r);
+      if (this.phaseValue === 'failed') return;
+      this.deliver(r.line, r.line);
+    });
+  }
+
+  /** Gives `text` to the engine for the already echoed `line`. */
+  private deliver(_line: string, text: string): void {
+    const before = this.state;
+    if (before === undefined) return;
+    const wasCommand = this.prompt.kind === 'command';
+    const transformed = this.deps.hooks.transformInput(text, this.ctx());
     let result;
     try {
       result = step(before, transformed, this.env);
@@ -373,6 +564,10 @@ export class GameController {
     }
     this.state = result.state;
     this.present(result.events);
+    if (wasCommand && this.resolver !== undefined) {
+      const resolver = this.resolver;
+      this.safeVoid(() => resolver.accepted(text));
+    }
   }
 
   /** Shows the outcome of one engine call; the Original_Text always comes first. */
@@ -404,7 +599,7 @@ export class GameController {
     if (over) {
       clearAutosave(this.kv);
     } else {
-      storeAutosave(this.kv, state, this.prompt, this.transcript.tail(AUTOSAVE_MAX_LINES));
+      storeAutosave(this.kv, state, this.prompt, this.transcript.tail(AUTOSAVE_MAX_LINES, AUTOSAVE_LINE_KINDS));
     }
   }
 

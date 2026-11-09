@@ -10,6 +10,7 @@
   --fg-dim: #1fae45;
   --focus: #ffd54f;
   --narrator: #e0c060;
+  --translation: #25c24d;
   --font: "VT323", "Courier New", Courier, monospace;
   --scanline-period: 3px; /* must stay in [2px, 4px] */
   --flicker-opacity: 0.96; /* >= 0.95, so luminance change <= 5% */
@@ -197,6 +198,42 @@ select {
 
 .line--boot {
   color: var(--fg-dim);
+}
+
+/* AI parser: translated command and the pending indicator (ai-parser spec). */
+.line--translation {
+  color: var(--translation);
+  padding-left: 2ch;
+}
+
+.line--pending {
+  color: var(--translation);
+  padding-left: 2ch;
+}
+
+/* Decorative dots only; the command text never goes in a pseudo-element. */
+.line--pending::after {
+  content: "...";
+  display: inline-block;
+  width: 3ch;
+  animation: pending-dots 1s steps(4) infinite;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+@keyframes pending-dots {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 3ch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .line--pending::after {
+    animation: none;
+  }
 }
 
 .line--narrator {

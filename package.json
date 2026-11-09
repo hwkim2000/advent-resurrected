@@ -13,11 +13,15 @@
     "preview": "vite preview",
     "check:dist": "tsx scripts/check-dist.ts",
     "gen:data": "tsx scripts/generate-data.ts",
+    "measure:latency": "tsx scripts/measure-latency.ts",
     "play": "tsx cli/advent-cli.ts",
     "test": "vitest --run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p functions/tsconfig.json",
+    "dev:pages": "npm run build && wrangler pages dev dist",
+    "db:local": "wrangler d1 execute advent-gate --local --persist-to .wrangler/state --file migrations/0001_gate.sql"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "5.20261109.1",
     "@types/node": "26.6.6",
     "fast-check": "4.10.2",
     "happy-dom": "21.0.4",
@@ -25,6 +29,7 @@
     "typescript": "7.0.2",
     "vite": "8.3.6",
     "vitest": "5.1.0",
+    "wrangler": "4.158.0",
     "yaml": "2.9.1"
   }
 }

@@ -16,6 +16,8 @@ export interface TerminalViewElements {
   prompt: HTMLElement;
   input: HTMLInputElement;
   live: HTMLElement;
+  /** Second polite live region for "Interpreted as ..."; falls back to `live`. */
+  liveInterpreted?: HTMLElement;
   /** Receives data-selected-mode / data-game-mode. Defaults to the document element. */
   root: HTMLElement;
 }
@@ -32,6 +34,9 @@ export function findTerminalElements(doc: Document = document): TerminalViewElem
     prompt: need('prompt'),
     input: need<HTMLInputElement>('input'),
     live: need('live'),
+    ...(doc.getElementById('live-interpreted')
+      ? { liveInterpreted: need('live-interpreted') }
+      : {}),
     root: doc.documentElement,
   };
 }
@@ -43,6 +48,8 @@ export class TerminalView implements TerminalPort {
   private current: { el: HTMLElement; text: Text } | null = null;
   private blockKind: LineKind = 'original';
   private stick = true;
+  /** The pending-indicator line, always the last child while shown. */
+  private pendingEl: HTMLElement | null = null;
 
   constructor(els?: TerminalViewElements, doc: Document = document) {
     this.doc = doc;
@@ -86,17 +93,20 @@ export class TerminalView implements TerminalPort {
 
   clear(): void {
     this.current = null;
+    this.pendingEl = null;
     this.els.transcript.replaceChildren();
     this.els.live.replaceChildren();
+    this.els.liveInterpreted?.replaceChildren();
     this.stick = true;
   }
 
   trimTo(maxLines: number): void {
     const t = this.els.transcript;
     const max = Math.max(0, Math.floor(maxLines));
-    while (t.childElementCount > max) {
+    const extra = this.pendingEl ? 1 : 0;
+    while (t.childElementCount - extra > max) {
       const first = t.firstElementChild;
-      if (!first) break;
+      if (!first || first === this.pendingEl) break;
       if (this.current && this.current.el === first) this.current = null;
       first.remove();
     }
@@ -113,6 +123,27 @@ export class TerminalView implements TerminalPort {
   setBusy(busy: boolean): void {
     if (busy) this.els.transcript.setAttribute('aria-hidden', 'true');
     else this.els.transcript.removeAttribute('aria-hidden');
+  }
+
+  showPending(): void {
+    if (this.pendingEl) return;
+    this.beginMutation();
+    const el = this.doc.createElement('div');
+    el.className = 'line line--pending';
+    this.els.transcript.appendChild(el);
+    this.pendingEl = el;
+    this.endMutation();
+  }
+
+  hidePending(): void {
+    if (!this.pendingEl) return;
+    this.pendingEl.remove();
+    this.pendingEl = null;
+  }
+
+  announceInterpretation(command: string): void {
+    const region = this.els.liveInterpreted ?? this.els.live;
+    region.textContent = `Interpreted as ${command}`;
   }
 
   announce(text: string): void {
@@ -133,7 +164,12 @@ export class TerminalView implements TerminalPort {
     const node = this.doc.createTextNode(text);
     // An empty Text node would defeat :empty, so only attach non-empty text.
     if (text !== '') el.appendChild(node);
-    this.els.transcript.appendChild(el);
+    // New lines go before the pending indicator so it stays last.
+    if (this.pendingEl && this.pendingEl.parentNode === this.els.transcript) {
+      this.els.transcript.insertBefore(el, this.pendingEl);
+    } else {
+      this.els.transcript.appendChild(el);
+    }
     return { el, text: node };
   }
 

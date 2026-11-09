@@ -8,7 +8,7 @@ export type PromptKind = Extract<OutputEvent, { type: 'prompt' }>['kind'];
 
 export type Mode = '1976' | 'haunted';
 export type Speed = 20 | 60 | 120 | 300 | 'instant';
-export type LineKind = 'original' | 'input' | 'notice' | 'narrator' | 'boot';
+export type LineKind = 'original' | 'input' | 'translation' | 'notice' | 'narrator' | 'boot';
 
 export interface TranscriptLine {
   kind: LineKind;
@@ -68,4 +68,10 @@ export interface TerminalPort {
   announce(text: string): void;
   showMode(selected: Mode, game: Mode | undefined): void;
   trimTo(maxLines: number): void;
+  /** Shows the pending indicator while the AI translates a line. */
+  showPending(): void;
+  /** Removes the pending indicator. */
+  hidePending(): void;
+  /** Announces "Interpreted as <command>" in a polite live region. */
+  announceInterpretation(command: string): void;
 }

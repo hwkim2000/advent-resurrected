@@ -92,7 +92,14 @@ export const arbOutputEvents: fc.Arbitrary<OutputEvent[]> = fc.array(arbOutputEv
 
 /* ---- transcript lines ---- */
 
-export const LINE_KINDS: readonly LineKind[] = ['original', 'input', 'notice', 'narrator', 'boot'];
+export const LINE_KINDS: readonly LineKind[] = [
+  'original',
+  'input',
+  'translation',
+  'notice',
+  'narrator',
+  'boot',
+];
 export const arbLineKind: fc.Arbitrary<LineKind> = fc.constantFrom(...LINE_KINDS);
 
 /** One transcript line; its text never holds a newline (the eol flag carries it). */

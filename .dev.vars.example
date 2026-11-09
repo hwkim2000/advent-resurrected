@@ -1,0 +1,11 @@
+# Example local variables for `wrangler pages dev`. Copy to `.dev.vars` (gitignored).
+# Non-secret example values only.
+MODEL_NAME=@cf/ibm-granite/granite-4.0-h-micro
+DAILY_CAP=2000
+RATE_LIMIT=30
+RATE_WINDOW_SECONDS=60
+UPSTREAM_TIMEOUT_MS=3500
+IP_HASH_SALT=advent-resurrected-dev
+# Local development only: lets requests without CF-Connecting-IP through.
+# Never put this variable in wrangler.toml.
+DEV_ALLOW_MISSING_IP=1

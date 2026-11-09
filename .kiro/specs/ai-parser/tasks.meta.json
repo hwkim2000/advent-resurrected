@@ -1,0 +1,896 @@
+{
+  "pbtResults": {
+    "3.2 Test the autosave round trip with `translation` lines and older autosaves": {
+      "status": "passed",
+      "lastRunTimestamp": 1794226506187
+    },
+    "4.6 Write property test for vocabulary closure": {
+      "status": "passed",
+      "lastRunTimestamp": 1794226969554
+    },
+    "4.7 Write property test for the request and response codec round trip with context validity": {
+      "status": "passed",
+      "lastRunTimestamp": 1794227107265
+    },
+    "8.6 Write property test for the eligibility partition": {
+      "status": "passed",
+      "lastRunTimestamp": 1794227371869
+    }
+  },
+  "executionHistory": {
+    "1.1 Verify `@cloudflare/workers-types` 5.x and `wrangler` under TypeScript 7.0.2": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978172
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225991890
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226097946
+      }
+    ],
+    "1.2 Verify what the types say about `AI.run` and `AbortSignal`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978217
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226102887
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226212437
+      }
+    ],
+    "1.3 Verify D1 SQL behavior and `wrangler d1 execute --local` from a Pages config": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978245
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226103532
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226213078
+      }
+    ],
+    "1.4 Consolidate the spike results and the fallback plan": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978260
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226217814
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226276360
+      }
+    ],
+    "2.1 Add the two visibility-only engine exports": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978276
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226284050
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226365397
+      }
+    ],
+    "2.2 Add the `translation` line kind and explicit autosave tail kinds": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978293
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226284084
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226366051
+      }
+    ],
+    "2.3 Add the `--translation` color token and the translation and pending line styles": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978315
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226284120
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226366686
+      }
+    ],
+    "2.4 Edit the layering test for the dynamic `import()` in `main.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978334
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226284557
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226367397
+      }
+    ],
+    "2.5 Create `src/shared/limits.ts` and the room-string sanitizing": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978349
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226285127
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226367923
+      }
+    ],
+    "3.1 Add the no-network test guard": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978363
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226374480
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226455215
+      }
+    ],
+    "3.2 Test the autosave round trip with `translation` lines and older autosaves": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978377
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226462859
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226587339
+      }
+    ],
+    "3.3 Create the injection corpus and the adversarial generators": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978390
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226374611
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226455864
+      }
+    ],
+    "4.1 Implement `src/shared/normalize.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978402
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226462883
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226587414
+      }
+    ],
+    "4.2 Implement `src/shared/vocabulary.ts` and `src/shared/meta-commands.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978421
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226462986
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226587905
+      }
+    ],
+    "4.3 Implement `src/shared/command-validation.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978434
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226701399
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226809558
+      }
+    ],
+    "4.4 Implement `validateContext` and `src/shared/protocol.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978449
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226903933
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227045938
+      }
+    ],
+    "4.5 Write the Meta_Command classification test pinned against `ACTIONS`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978463
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226701614
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226809841
+      }
+    ],
+    "4.6 Write property test for vocabulary closure": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978477
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226903980
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227046051
+      }
+    ],
+    "4.7 Write property test for the request and response codec round trip with context validity": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978492
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227053957
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227194739
+      }
+    ],
+    "5. Checkpoint - shared modules": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978504
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227875046
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227919298
+      }
+    ],
+    "6.1 Implement `src/parse-api/config.ts` and `src/parse-api/prompt.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978515
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226904205
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227046097
+      }
+    ],
+    "6.2 Implement `src/parse-api/provider.ts` and `src/parse-api/http.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978527
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227053988
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227196392
+      }
+    ],
+    "6.3 Implement the D1 gate: `migrations/0001_gate.sql`, `src/parse-api/gate.ts`, `src/parse-api/d1-gate-store.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978538
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227054879
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227197394
+      }
+    ],
+    "6.4 Implement `src/parse-api/handler.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978549
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227205821
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227457177
+      }
+    ],
+    "6.5 Add the Pages Function entry, its tsconfig and the package scripts": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978560
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227588715
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227701403
+      }
+    ],
+    "6.6 Add the Cloudflare configuration files": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978576
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227055548
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227194041
+      }
+    ],
+    "6.7 Create the server test doubles": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978588
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227205862
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227579083
+      }
+    ],
+    "6.8 Write the rate-limit and daily-cap SQL tests on `node:sqlite`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978601
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227589555
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227702095
+      }
+    ],
+    "6.9 Write the injection-corpus test": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978613
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227590114
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227703112
+      }
+    ],
+    "7. Checkpoint - server": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978629
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227923762
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794228954035
+      }
+    ],
+    "8.1 Implement `src/parser/config.ts` and `src/parser/eligibility.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978645
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226905202
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227046711
+      }
+    ],
+    "8.2 Implement `src/parser/game-context.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978662
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226905548
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227047369
+      }
+    ],
+    "8.3 Implement `src/parser/ai-parser.ts` and `src/parser/browser.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978678
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227056415
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227195678
+      }
+    ],
+    "8.4 Create `src/ui/input-resolver.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978694
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226463514
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226588545
+      }
+    ],
+    "8.5 Create the client test doubles": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978709
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226818378
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226888473
+      }
+    ],
+    "8.6 Write property test for the eligibility partition": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978721
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227206002
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227457251
+      }
+    ],
+    "9.1 Extend `TerminalPort` and the `FakeTerminal`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978733
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226464048
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226589264
+      }
+    ],
+    "9.2 Add the asynchronous input-resolution stage to `src/ui/game-controller.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978756
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226701645
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226811167
+      }
+    ],
+    "9.3 Update `src/ui/dom/terminal-view.ts` and `index.html`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978771
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226702208
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226810842
+      }
+    ],
+    "9.4 Load the AI parser lazily in `src/main.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978832
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227206563
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227457206
+      }
+    ],
+    "10.1 Write the 1976-isolation test": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978848
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227207171
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227457315
+      }
+    ],
+    "11.1 Create `scripts/credential-patterns.ts` and extend `scripts/check-dist.ts`": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978861
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226597152
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226693462
+      }
+    ],
+    "11.2 Write the repository scan test": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978875
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226702703
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226812323
+      }
+    ],
+    "11.3 Write the `dist` scan test": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978888
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226818398
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226887777
+      }
+    ],
+    "11.4 Add the `measure:latency` script": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978904
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227708550
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227793363
+      }
+    ],
+    "11.5 Update the README and the credits page": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978919
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227802143
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227869495
+      }
+    ],
+    "12. Final checkpoint - everything green": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978941
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794228960300
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794229055869
+      }
+    ],
+    "13. OWNER STEP - MANUAL, NOT EXECUTABLE BY THE AGENT (do not run, do not mark done on the owner's behalf)": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225978960
+      },
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794225986300
+      }
+    ],
+    "1. Verification spike (do this before any feature code)": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226276371
+      }
+    ],
+    "2. Prerequisites for the code issues found by the design": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226367933
+      }
+    ],
+    "3. Test guard and shared test support": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794226587357
+      }
+    ],
+    "4. Shared pure modules (`src/shared`)": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227194749
+      }
+    ],
+    "9. UI integration (`GameController`, view, `main.ts`)": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227457220
+      }
+    ],
+    "8. Client AI parser (`src/parser`)": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227457266
+      }
+    ],
+    "10. 1976 isolation and fidelity with the AI parser installed": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227457325
+      }
+    ],
+    "6. Server: Parse_Endpoint, D1 gate and Cloudflare configuration": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227703143
+      }
+    ],
+    "11. Tooling, scans, latency script and documentation": [
+      {
+        "executionId": "d05ba89b-2bff-42cb-92fa-6d9d48690de3",
+        "chatSessionId": "sess_04e5e16b-d3c0-4609-8d91-4c96362f1b5a",
+        "timestamp": 1794227869508
+      }
+    ]
+  }
+}

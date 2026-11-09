@@ -3,3 +3,22 @@
 name = "advent-resurrected"
 pages_build_output_dir = "./dist"
 compatibility_date = "2025-01-01"
+
+[ai]
+binding = "AI"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "advent-gate"
+# PLACEHOLDER id (all zeros). OWNER STEP: after `wrangler d1 create advent-gate`,
+# replace it with the real database id. It is an identifier, not a secret.
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+[vars]
+MODEL_NAME = "@cf/ibm-granite/granite-4.0-h-micro"
+DAILY_CAP = "2000"
+RATE_LIMIT = "30"
+RATE_WINDOW_SECONDS = "60"
+UPSTREAM_TIMEOUT_MS = "3500"
+IP_HASH_SALT = "advent-resurrected-v1"

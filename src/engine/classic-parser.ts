@@ -96,7 +96,7 @@ function foldChar(c: string): string {
 }
 
 /** C: strncasecmp(a, b, n) == 0, with end-of-string acting as NUL. */
-function strncaseeq(a: string, b: string, n: number): boolean {
+export function strncaseeq(a: string, b: string, n: number): boolean {
   for (let i = 0; i < n; i++) {
     const ca = i < a.length ? foldChar(a[i]!) : '\0';
     const cb = i < b.length ? foldChar(b[i]!) : '\0';
@@ -206,7 +206,7 @@ export function getVocabMetadata(
 }
 
 /** C: sscanf(raw, "%s%s", ...): up to two C-isspace-delimited tokens. */
-function scanTwoWords(raw: string): [string, string] {
+export function scanTwoWords(raw: string): [string, string] {
   const out: string[] = [];
   let i = 0;
   while (out.length < 2) {

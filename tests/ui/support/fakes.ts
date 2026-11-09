@@ -49,7 +49,10 @@ export type TerminalCall =
   | { method: 'setBusy'; busy: boolean }
   | { method: 'announce'; text: string }
   | { method: 'showMode'; selected: Mode; game: Mode | undefined }
-  | { method: 'trimTo'; maxLines: number };
+  | { method: 'trimTo'; maxLines: number }
+  | { method: 'showPending' }
+  | { method: 'hidePending' }
+  | { method: 'announceInterpretation'; command: string };
 
 /** One revealed block, reassembled from its chunks. */
 export interface CapturedBlock {
@@ -72,6 +75,8 @@ export class FakeTerminal implements TerminalPort {
   readonly blocks: CapturedBlock[] = [];
   readonly instantLines: TranscriptLine[] = [];
   readonly announcements: string[] = [];
+  readonly interpretations: string[] = [];
+  pending = false;
   prompt: PromptInfo | undefined;
   inputEnabled = true;
   busy = false;
@@ -120,6 +125,18 @@ export class FakeTerminal implements TerminalPort {
   }
   trimTo(maxLines: number): void {
     this.calls.push({ method: 'trimTo', maxLines });
+  }
+  showPending(): void {
+    this.calls.push({ method: 'showPending' });
+    this.pending = true;
+  }
+  hidePending(): void {
+    this.calls.push({ method: 'hidePending' });
+    this.pending = false;
+  }
+  announceInterpretation(command: string): void {
+    this.calls.push({ method: 'announceInterpretation', command });
+    this.interpretations.push(command);
   }
 
   /** Revealed text of all blocks of the given kind, in order. */

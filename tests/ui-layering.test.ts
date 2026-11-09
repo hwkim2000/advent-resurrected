@@ -159,6 +159,38 @@ function isInside(target: string, dir: string): boolean {
   return target === dir || target.startsWith(dir + sep);
 }
 
+const PARSER_DIR = join(SRC, "parser");
+/** Layers that src/ui and src/main.ts must not statically import (ai-parser spec, task 2.4). */
+const LAYER_FORBIDDEN = ["haunt", "parser", "voice", "shared", "parse-api"].map((d) => join(SRC, d));
+
+/** Import references with their kind: dynamic `import("x")` versus every static form. */
+function importRefs(withStrings: string): Array<{ spec: string; dynamic: boolean }> {
+  const refs: Array<{ spec: string; dynamic: boolean }> = [];
+  const statics = [
+    /\b(?:import|export)\s[^;]*?\bfrom\s*["']([^"']+)["']/g,
+    /\bimport\s*["']([^"']+)["']/g,
+    /\brequire\s*\(\s*["']([^"']+)["']\s*\)/g,
+  ];
+  for (const re of statics) {
+    for (const m of withStrings.matchAll(re)) refs.push({ spec: m[1]!, dynamic: false });
+  }
+  for (const m of withStrings.matchAll(/\bimport\s*\(\s*["']([^"']+)["']\s*\)/g)) {
+    refs.push({ spec: m[1]!, dynamic: true });
+  }
+  return refs;
+}
+
+/** Specifiers in a source text that point into src/parser through a non-dynamic reference. */
+function staticParserImports(file: string, text: string): string[] {
+  const bad: string[] = [];
+  for (const { spec, dynamic } of importRefs(strip(text).withStrings)) {
+    if (dynamic) continue;
+    const target = resolveSpec(file, spec);
+    if (target !== undefined && isInside(target, PARSER_DIR)) bad.push(`${rel(file)} -> ${spec}`);
+  }
+  return bad;
+}
+
 const UI_FILES = [...tsFiles(UI_DIR, true), ...(existsSync(MAIN_TS) ? [MAIN_TS] : [])];
 const PURE_UI_FILES = tsFiles(UI_DIR, false);
 
@@ -187,9 +219,9 @@ describe("ui layering: imports", () => {
     expect(bad, `deep engine imports:\n  ${bad.join("\n  ")}`).toEqual([]);
   });
 
-  it("src/ui and src/main.ts import nothing from src/haunt, src/parser or src/voice", () => {
+  it("src/ui and src/main.ts import nothing from src/haunt, src/voice, src/shared or src/parse-api", () => {
     const bad: string[] = [];
-    const forbidden = ["haunt", "parser", "voice"].map((d) => join(SRC, d));
+    const forbidden = LAYER_FORBIDDEN.filter((d) => d !== PARSER_DIR);
     for (const f of UI_FILES) {
       for (const spec of importSpecifiers(strip(read(f)).withStrings)) {
         const target = resolveSpec(f, spec);
@@ -198,6 +230,23 @@ describe("ui layering: imports", () => {
       }
     }
     expect(bad, `forbidden layer imports:\n  ${bad.join("\n  ")}`).toEqual([]);
+  });
+
+  it("src/ui has no reference to src/parser, static or dynamic", () => {
+    const bad: string[] = [];
+    for (const f of tsFiles(UI_DIR, true)) {
+      for (const { spec } of importRefs(strip(read(f)).withStrings)) {
+        const target = resolveSpec(f, spec);
+        if (target !== undefined && isInside(target, PARSER_DIR)) bad.push(`${rel(f)} -> ${spec}`);
+      }
+    }
+    expect(bad, `src/ui references src/parser:\n  ${bad.join("\n  ")}`).toEqual([]);
+  });
+
+  it("src/main.ts reaches src/parser only through dynamic import()", () => {
+    expect(existsSync(MAIN_TS)).toBe(true);
+    const bad = staticParserImports(MAIN_TS, read(MAIN_TS));
+    expect(bad, `static imports of src/parser in main.ts:\n  ${bad.join("\n  ")}`).toEqual([]);
   });
 
   it("src/engine imports nothing from src/ui", () => {
@@ -291,6 +340,24 @@ describe("ui layering: rule self-checks", () => {
     const ok = strip('// Date window\nconst s = "document innerHTML"; /* setTimeout */ const x = 1;').code;
     expect(scanLines(ok, PURE_FORBIDDEN, "x.ts")).toEqual([]);
     expect(scanLines(ok, HTML_SINKS, "x.ts")).toEqual([]);
+  });
+
+  it("planted fixture: a static import of src/parser from main.ts fails, a dynamic one passes", () => {
+    const staticFixture = 'import { AiParser } from "./parser/ai-parser";\nexport const x = AiParser;\n';
+    const typeFixture = 'import type { AiParser } from "./parser/ai-parser";\n';
+    const sideEffectFixture = 'import "./parser/ai-parser";\n';
+    const dynamicFixture = 'const m = await import("./parser/ai-parser");\nexport const x = m;\n';
+    const commentFixture = '// import { A } from "./parser/ai-parser";\nconst s = 1;\n';
+    expect(staticParserImports(MAIN_TS, staticFixture)).toHaveLength(1);
+    expect(staticParserImports(MAIN_TS, typeFixture)).toHaveLength(1);
+    expect(staticParserImports(MAIN_TS, sideEffectFixture)).toHaveLength(1);
+    expect(staticParserImports(MAIN_TS, dynamicFixture)).toEqual([]);
+    expect(staticParserImports(MAIN_TS, commentFixture)).toEqual([]);
+    // The same dynamic import from a src/ui file is still a violation of the ui rule.
+    const uiFile = join(UI_DIR, "x.ts");
+    const refs = importRefs(strip('await import("../parser/ai-parser");').withStrings);
+    expect(refs).toEqual([{ spec: "../parser/ai-parser", dynamic: true }]);
+    expect(isInside(resolveSpec(uiFile, refs[0]!.spec)!, PARSER_DIR)).toBe(true);
   });
 
   it("resolves deep engine specifiers", () => {

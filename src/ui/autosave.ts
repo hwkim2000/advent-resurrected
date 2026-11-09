@@ -22,7 +22,23 @@ export interface Restored {
   lines: TranscriptLine[];
 }
 
-const LINE_KINDS: readonly LineKind[] = ['original', 'input', 'notice', 'narrator', 'boot'];
+/** Kinds persisted in the autosave tail (never `boot`). */
+export const AUTOSAVE_LINE_KINDS: readonly LineKind[] = [
+  'original',
+  'input',
+  'translation',
+  'notice',
+  'narrator',
+];
+
+const LINE_KINDS: readonly LineKind[] = [
+  'original',
+  'input',
+  'translation',
+  'notice',
+  'narrator',
+  'boot',
+];
 const PROMPT_KINDS: readonly string[] = ['command', 'yesno', 'filename'];
 
 function isObject(x: unknown): x is Record<string, unknown> {
