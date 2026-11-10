@@ -193,6 +193,20 @@ Tests run with `npx vitest --run`. Engine tests run in the default Node environm
 
 Run `npm run build` first, then `npm run check:layout`. The script serves `dist/` itself (vite preview on port 4173) and drives an installed Edge or Chrome through `playwright-core` (no browser download; set `CHROME_PATH` or `EDGE_PATH` to use a specific executable). It asserts the MIC, its disclosure and the input line stay on screen at 1280x720, 1366x768 and 1024x600, and reports other sizes without failing. It is a local script, not part of CI.
 
+## Developer tooling
+
+- `npm run mcp:advent` starts an MCP server over stdio (tools `new_game`, `send_command`, `get_state`, `ask_ghost`) that plays the engine in memory; SAVE never touches disk. `npm run mcp:demo` spawns it as a real stdio client and prints a 20-turn transcript.
+- MCP config for Kiro (`.kiro/settings/mcp.json`, created by hand, not by the agent):
+
+  ```json
+  { "mcpServers": { "advent": { "command": "npx", "args": ["tsx", "tools/advent-mcp/server.ts"],
+    "autoApprove": ["new_game", "send_command", "get_state", "ask_ghost"], "disabled": false } } }
+  ```
+
+- Hooks in `.kiro/hooks/`: `engine-fidelity.json` (PostFileSave on `src/engine`, `src/data`, `original/`, `scripts/generate-data.ts`: fidelity and walkthrough tests), `line-lint.json` (PostFileSave on the narrator line files: line lint and voice manifest sync), `predeploy.json` (Manual: `npm run predeploy`; the Manual trigger cannot be invoked from the Kiro CLI, so run the npm script yourself).
+- File-save hooks fire only for edits made by the agent, not for saves in your editor.
+- `npm run predeploy` runs typecheck, `vitest --run`, build and `check:dist`, stops at the first failure, then prints the raw and gzip size of the start script and the delta to `scripts/start-script-baseline.json` (gzip measured with Node's default level; Vite and PowerShell numbers differ slightly). `npx tsx scripts/predeploy.ts --report-only` prints just the report. It never deploys.
+
 ## Credits
 
 Based on *Colossal Cave Adventure* by Will Crowther and Don Woods,

@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Narrator line lint",
+      "trigger": "PostFileSave",
+      "matcher": "(^|[\\\\/])src[\\\\/]haunt[\\\\/](lines|hints|yes-no|spoken-word-rule|voice-lines)\\.ts$",
+      "action": {
+        "type": "command",
+        "command": "npx vitest --run tests/haunt/line-lint.test.ts tests/voice-manifest-sync.test.ts"
+      },
+      "timeout": 120,
+      "description": "Lints narrator lines (ASCII, length, banned words, duplicates) and checks the voice manifest after a line file is saved. Fires only for edits made by the agent."
+    }
+  ]
+}

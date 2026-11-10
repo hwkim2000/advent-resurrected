@@ -15,5 +15,5 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["src", "scripts", "tests", "cli", "vitest.config.ts", "vite.config.ts"]
+  "include": ["src", "scripts", "tests", "cli", "tools", "vitest.config.ts", "vite.config.ts"]
 }

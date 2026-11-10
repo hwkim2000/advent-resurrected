@@ -1,0 +1,16 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Engine fidelity",
+      "trigger": "PostFileSave",
+      "matcher": "(^|[\\\\/])(src[\\\\/](engine|data)[\\\\/]|original[\\\\/]|scripts[\\\\/]generate-data\\.ts$)",
+      "action": {
+        "type": "command",
+        "command": "npx vitest --run tests/fidelity.test.ts tests/walkthrough.test.ts"
+      },
+      "timeout": 300,
+      "description": "Replays the upstream logs and the 430-point walkthrough after an engine, game-data or generator file is saved. Fires only for edits made by the agent."
+    }
+  ]
+}

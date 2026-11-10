@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Pre-deploy checks",
+      "trigger": "Manual",
+      "action": {
+        "type": "command",
+        "command": "npm run predeploy"
+      },
+      "timeout": 900,
+      "description": "Typecheck, tests, build, check:dist and start-script size report. The Manual trigger is accepted by the hook format but cannot be invoked from the Kiro CLI; run `npm run predeploy` yourself. Never deploys."
+    }
+  ]
+}
