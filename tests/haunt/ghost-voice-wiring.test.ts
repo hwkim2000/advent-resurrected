@@ -37,7 +37,7 @@ class ThrowingVoiceEffects extends VoiceEffects {
 
 function setup(effects: HauntEffectsPort): { m: MadeController; h: ReturnType<typeof createHaunting> } {
   const m = makeController({ mode: 'haunted' });
-  const h = createHaunting({ hooks: m.hooks, effects, motion: new FakeMotion(false), seed: 7 });
+  const h = createHaunting({ hooks: m.hooks, effects, motion: new FakeMotion(false), seed: 7, getState: () => m.controller.engineState });
   h.gameStart(m.controller.engineState);
   return { m, h };
 }

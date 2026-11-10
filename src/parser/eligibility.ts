@@ -4,6 +4,7 @@
  */
 import type { GameState } from '../engine';
 import { isClassicCommandText } from '../shared/command-validation';
+import { isGhostPhrase, isGhostPrefixAsk } from '../shared/ghost-ask';
 import { TEXT_MAX_CHARS } from '../shared/limits';
 import { hasControlChars, hasLoneSurrogate, normalizePlayerText } from '../shared/normalize';
 
@@ -38,6 +39,9 @@ export function classifyInput(line: string, input: ResolveInput): Eligibility {
   }
 
   if (NUMERIC_OR_BLANK.test(line)) return { kind: 'pass' };
+
+  // Ghost asks are answered client-side by the hint gate: no request.
+  if (isGhostPrefixAsk(line) || isGhostPhrase(line)) return { kind: 'pass' };
 
   if (isClassicCommandText(line, state.game.zzword, state.session.settings.oldstyle)) {
     return { kind: 'pass' };

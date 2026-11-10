@@ -64,15 +64,33 @@ describe('readConfig', () => {
 });
 
 describe('prompt', () => {
-  it('has eight examples whose answers validate and whose contexts are valid', () => {
-    expect(PROMPT_EXAMPLES).toHaveLength(8);
-    for (const e of PROMPT_EXAMPLES) {
-      const r = validateCommand(e.answer);
-      expect(r.ok && r.command).toBe(e.answer);
+  it('has ten examples: eight command examples that validate, then two GHOST examples', () => {
+    expect(PROMPT_EXAMPLES).toHaveLength(10);
+    PROMPT_EXAMPLES.forEach((e, i) => {
+      if (i < 8) {
+        const r = validateCommand(e.answer);
+        expect(r.ok && r.command).toBe(e.answer);
+      } else {
+        // Explicit exception: the reserved sentinel is not vocabulary.
+        expect(e.answer).toBe('GHOST');
+        expect(validateCommand(e.answer).ok).toBe(false);
+      }
       expect(ROOM_SET.has(e.ctx.room)).toBe(true);
       for (const o of e.ctx.objects) expect(OBJECT_WORDS.has(o)).toBe(true);
       for (const l of e.ctx.last) expect(validateCommand(l).ok).toBe(true);
-    }
+    });
+  });
+
+  it('appends the GHOST rule after the original rules and the GHOST examples after the original eight', () => {
+    const p = buildSystemPrompt();
+    expect(p).toContain(
+      '- Never explain, never add punctuation, never use any other word.\n- If the player asks for help or a hint, or says they are stuck or lost, reply GHOST.\n',
+    );
+    const ex = p.slice(p.indexOf('Examples (user message, then the reply):'));
+    const originals = PROMPT_EXAMPLES.slice(0, 8).map((e) => `${buildUserMessage(e.text, e.ctx)}\n${e.answer}`);
+    expect(ex).toContain(originals.join('\n'));
+    const [g1, g2] = PROMPT_EXAMPLES.slice(8).map((e) => `${buildUserMessage(e.text, e.ctx)}\nGHOST`);
+    expect(ex.endsWith(`${originals.join('\n')}\n${g1}\n${g2}`)).toBe(true);
   });
 
   it('system prompt is fixed, lists vocabulary, and excludes meta words', () => {

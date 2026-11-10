@@ -9,6 +9,7 @@
  */
 import type { GameState, OutputEvent } from '../engine/index';
 import { dimLevel } from './dim';
+import { createGhostGate } from './ghost-gate';
 import { createGlitchPolicy } from './glitch';
 import { detectMoments, type TurnInfo } from './moments';
 import { createNarrator } from './narrator';
@@ -68,6 +69,8 @@ export interface HauntingDeps {
   motion: HauntMotion;
   /** Integer seed for the narrator picker (not the engine seed). */
   seed: number;
+  /** Current engine state (read-only use) for the hint gate; undefined before a game exists. */
+  getState(): GameState | undefined;
 }
 
 export interface Haunting {
@@ -144,12 +147,21 @@ export function createHaunting(deps: HauntingDeps): Haunting {
   );
 
   const yesNoGate = createYesNoGate();
+  const ghostGate = createGhostGate({ getState: () => deps.getState() });
   register(() => hooks.addInputTransformer((line, ctx) => {
     if (!disposed) safe(() => effects.stopSpeaking?.());
     try {
       return disposed ? line : transformYesNo(line, ctx);
     } catch {
       return line;
+    }
+  }));
+  // Registered before the yes/no gate: it only acts at the command prompt.
+  register(() => hooks.addInputGate((text, origin, deflections, ctx) => {
+    try {
+      return disposed ? { kind: 'allow' } : ghostGate(text, origin, deflections, ctx);
+    } catch {
+      return { kind: 'allow' };
     }
   }));
   register(() => hooks.addInputGate((text, origin, deflections, ctx) => {
@@ -166,6 +178,7 @@ export function createHaunting(deps: HauntingDeps): Haunting {
       safe(() => effects.stopSpeaking?.());
       safe(() => narrator.gameStart());
       safe(() => glitchPolicy.reset());
+      safe(() => ghostGate.reset());
       if (state !== undefined) safe(() => effects.setDim(dimLevel(state.game)));
     },
     dispose() {

@@ -8,6 +8,7 @@
  */
 import { validateCommand } from '../shared/command-validation';
 import type { GameState } from '../engine/types';
+import { GHOST_TOKEN, isGhostToken } from '../shared/ghost-ask';
 import { pickClosestObject } from '../shared/object-match';
 import { decodeErrorBody, decodeSuccess, encodeRequest } from '../shared/protocol';
 import {
@@ -142,6 +143,7 @@ export class AiParser {
     const raw = await this.send(body, signal);
     const outcome = this.interpret(raw);
     if (outcome.kind !== 'translated') return outcome;
+    if (outcome.command === GHOST_TOKEN) return outcome;
     return { kind: 'translated', command: this.disambiguate(eligibility.text, outcome.command, state) };
   }
 
@@ -243,6 +245,12 @@ export class AiParser {
 
     const decoded = decodeSuccess(json);
     if (decoded === undefined) return this.availabilityFallback();
+    // GHOST is a reserved sentinel (not vocabulary): handled before validateCommand.
+    if (isGhostToken(decoded)) {
+      this.failures = 0;
+      this.noticeArmed = true;
+      return { kind: 'translated', command: GHOST_TOKEN };
+    }
     const checked = validateCommand(decoded);
     if (!checked.ok) return this.availabilityFallback();
 

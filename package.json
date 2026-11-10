@@ -15,6 +15,7 @@
     "check:layout": "tsx scripts/check-layout.ts",
     "gen:voice": "tsx scripts/gen-voice.ts",
     "gen:data": "tsx scripts/generate-data.ts",
+    "eval:parser": "tsx scripts/eval-parser.ts",
     "measure:latency": "tsx scripts/measure-latency.ts",
     "play": "tsx cli/advent-cli.ts",
     "test": "vitest --run",

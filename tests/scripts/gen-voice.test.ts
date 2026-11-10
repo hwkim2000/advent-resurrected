@@ -4,6 +4,7 @@ import {
   ENV_ACCOUNT,
   ENV_TOKEN,
   FFMPEG_MISSING_MESSAGE,
+  MAX_TOTAL_BYTES,
   MP3_BITRATE,
   MP3_SAMPLE_RATE,
   TTS_MODEL,
@@ -33,6 +34,12 @@ function manifestFor(lines: string[]): Manifest {
   for (const l of lines) entries[voiceKey(l)] = { file: `${voiceKey(l)}.mp3`, bytes: 10, text: l }
   return { version: 1, model: TTS_MODEL, entries }
 }
+
+describe('audio size limit', () => {
+  it('is 4 MB in total', () => {
+    expect(MAX_TOTAL_BYTES).toBe(4 * 1024 * 1024)
+  })
+})
 
 describe('planGeneration', () => {
   const lines = ['alpha line', 'beta line']

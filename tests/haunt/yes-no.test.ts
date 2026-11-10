@@ -27,7 +27,7 @@ function setup(mode: 'haunted' | '1976' = 'haunted', withHaunting = true): MadeC
   const m = makeController({ mode });
   m.hooks.addInputGate(createSpokenWordGate({ isVoiceUsable: () => true }));
   if (withHaunting) {
-    createHaunting({ hooks: m.hooks, effects: NOOP_FX, motion: new FakeMotion(false), seed: 3 }).gameStart(
+    createHaunting({ hooks: m.hooks, effects: NOOP_FX, motion: new FakeMotion(false), seed: 3, getState: () => m.controller.engineState }).gameStart(
       m.controller.engineState,
     );
   }

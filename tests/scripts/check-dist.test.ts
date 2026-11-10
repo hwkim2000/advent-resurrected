@@ -4,6 +4,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { checkDist, PRIVACY_STATEMENTS } from '../../scripts/check-dist'
 import { HAUNT_CHUNK_MARKER } from '../../src/haunt/haunting'
+import { HINT_TABLE_MARKER } from '../../src/haunt/hints'
 import { GHOST_VOICE_CHUNK_MARKER } from '../../src/ui/dom/ghost-voice'
 import { CREDITS_HTML, cleanupDists, makeDist } from './support/make-dist'
 
@@ -89,6 +90,16 @@ describe('check-dist', () => {
   it('fails when no lazy chunk contains the Ghost_Voice marker', () => {
     const dir = makeDist({ files: { 'assets/ghost.js': null } })
     expect(checkDist(dir).some((e) => e.includes('Ghost_Voice chunk missing'))).toBe(true)
+  })
+
+  it('fails when the start script contains the hint table marker', () => {
+    const dir = makeDist({ startScript: `const m = "${HINT_TABLE_MARKER}"; import("./voice.js")` })
+    expect(checkDist(dir).some((e) => e.includes('dist/assets/index.js') && e.includes('hint table chunk marker'))).toBe(true)
+  })
+
+  it('fails when no lazy chunk contains the hint table marker', () => {
+    const dir = makeDist({ files: { 'assets/hints.js': null } })
+    expect(checkDist(dir).some((e) => e.includes('hint table chunk missing'))).toBe(true)
   })
 
   it('does not scan dist/voice/*.mp3 as text for credentials', () => {

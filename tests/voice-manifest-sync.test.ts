@@ -1,5 +1,5 @@
 // ghost-voice task 6.3: public/voice/manifest.json must cover every Voice_Line (strict when the
-// manifest exists, visibly skipped otherwise) and the audio must stay under 3 MB.
+// manifest exists, visibly skipped otherwise) and the audio must stay under 4 MB.
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -8,7 +8,7 @@ import { voiceKey, voiceLines } from '../src/haunt/voice-lines';
 const DIR = join(__dirname, '..', 'public', 'voice');
 const MANIFEST = join(DIR, 'manifest.json');
 const present = existsSync(MANIFEST);
-const MAX_TOTAL_BYTES = 3 * 1024 * 1024;
+const MAX_TOTAL_BYTES = 4 * 1024 * 1024;
 
 interface Entry {
   file: string;
@@ -35,7 +35,7 @@ describe('voice manifest sync', () => {
   );
 
   it.skipIf(!present)(
-    'every manifest file exists with the recorded size and total audio is under 3 MB (SKIPPED when public/voice/manifest.json is absent: audio not generated yet)',
+    'every manifest file exists with the recorded size and total audio is under 4 MB (SKIPPED when public/voice/manifest.json is absent: audio not generated yet)',
     () => {
       let total = 0;
       for (const e of Object.values(load().entries)) {

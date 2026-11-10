@@ -53,7 +53,7 @@ function say(m: MadeController, line: string): void {
 function setup(effects: HauntEffectsPort | undefined): MadeController {
   const m = makeController({ mode: 'haunted' });
   if (effects !== undefined) {
-    createHaunting({ hooks: m.hooks, effects, motion: new FakeMotion(false), seed: 7 }).gameStart(
+    createHaunting({ hooks: m.hooks, effects, motion: new FakeMotion(false), seed: 7, getState: () => m.controller.engineState }).gameStart(
       m.controller.engineState,
     );
   }
@@ -156,7 +156,7 @@ describe('haunting assembly', () => {
   it('dispose unregisters the hooks and resets the effects', () => {
     const fx = new FakeEffects();
     const m = makeController({ mode: 'haunted' });
-    const h = createHaunting({ hooks: m.hooks, effects: fx, motion: new FakeMotion(false), seed: 1 });
+    const h = createHaunting({ hooks: m.hooks, effects: fx, motion: new FakeMotion(false), seed: 1, getState: () => m.controller.engineState });
     h.gameStart(m.controller.engineState);
     h.dispose();
     expect(fx.resets).toBe(1);
@@ -170,7 +170,7 @@ describe('haunting assembly', () => {
   it('shows no narrator and calls no effects in 1976 mode', () => {
     const fx = new FakeEffects();
     const m = makeController({ mode: '1976' });
-    createHaunting({ hooks: m.hooks, effects: fx, motion: new FakeMotion(false), seed: 1 }).gameStart(
+    createHaunting({ hooks: m.hooks, effects: fx, motion: new FakeMotion(false), seed: 1, getState: () => m.controller.engineState }).gameStart(
       m.controller.engineState,
     );
     fx.dims.length = 0;

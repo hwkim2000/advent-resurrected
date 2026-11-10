@@ -8,6 +8,7 @@
  */
 import type { ErrorCode } from '../shared/protocol';
 import { decodeRequest, encodeSuccess } from '../shared/protocol';
+import { GHOST_TOKEN, isGhostToken } from '../shared/ghost-ask';
 import { validateCommand } from '../shared/command-validation';
 import { BODY_MAX_BYTES } from '../shared/limits';
 import { readConfig } from './config';
@@ -77,6 +78,17 @@ function safeDefer(deps: ParseDeps, p: Promise<unknown>): void {
   } catch {
     /* ignore */
   }
+}
+
+function successResponse(command: string): Response {
+  return new Response(encodeSuccess(command), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store',
+      'X-Content-Type-Options': 'nosniff',
+    },
+  });
 }
 
 export async function handleParse(
@@ -191,18 +203,14 @@ export async function handleParse(
 
     if (typeof raw !== 'string') return fail('upstream');
 
+    // 10a. Reserved sentinel: the whole output, trimmed and upper-cased, is GHOST.
+    if (isGhostToken(raw)) return successResponse(GHOST_TOKEN);
+
     // 10. Validate the candidate.
     const result = validateCommand(raw);
     if (!result.ok) return fail('no_command');
 
-    return new Response(encodeSuccess(result.command), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store',
-        'X-Content-Type-Options': 'nosniff',
-      },
-    });
+    return successResponse(result.command);
   } catch {
     return fail('upstream');
   }

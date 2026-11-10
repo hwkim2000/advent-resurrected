@@ -1,6 +1,7 @@
 // ghost-voice task 1.3: Voice_Key stability, normalization and line coverage.
 import { describe, expect, it } from 'vitest';
 import { ALL_POOLS, REINCARNATION_COUNTDOWN } from '../../src/haunt/lines';
+import { HINT_POOLS } from '../../src/haunt/hints';
 import { DEFLECTION_LINE } from '../../src/haunt/spoken-word-rule';
 import { normalizeVoiceLine, voiceKey, voiceLines } from '../../src/haunt/voice-lines';
 import { NUDGE_LINES } from '../../src/haunt/yes-no';
@@ -35,6 +36,15 @@ describe('voice-lines', () => {
   it('has no key collisions', () => {
     const keys = voiceLines().map(voiceKey);
     expect(new Set(keys).size).toBe(keys.length);
+  });
+
+  it('covers every hint line (and the hint lines add to the list)', () => {
+    const set = new Set(voiceLines());
+    const hints = Object.values(HINT_POOLS).flat();
+    expect(hints.length).toBeGreaterThanOrEqual(40);
+    for (const line of hints) expect(set.has(normalizeVoiceLine(line))).toBe(true);
+    const keys = new Map(voiceLines().map((l) => [voiceKey(l), l]));
+    for (const line of hints) expect(keys.get(voiceKey(line))).toBe(normalizeVoiceLine(line));
   });
 
   it('covers every pool entry, the countdown, nudges and the deflection', () => {

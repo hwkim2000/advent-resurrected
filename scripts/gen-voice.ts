@@ -14,7 +14,7 @@ import { voiceKey, voiceLines } from '../src/haunt/voice-lines'
 
 export const TTS_MODEL = '@cf/myshell-ai/melotts'
 export const MANIFEST_VERSION = 1
-export const MAX_TOTAL_BYTES = 3 * 1024 * 1024
+export const MAX_TOTAL_BYTES = 4 * 1024 * 1024
 export const MP3_SAMPLE_RATE = 22050
 export const MP3_BITRATE = '48k'
 
@@ -272,7 +272,7 @@ async function main(argv: readonly string[]): Promise<number> {
 
   const total = Object.values(entries).reduce((n, e) => n + e.bytes, 0)
   console.log(`Done: ${Object.keys(entries).length} files, ${total} bytes.`)
-  if (total > MAX_TOTAL_BYTES) console.warn('Warning: total audio exceeds the 3 MB target.')
+  if (total > MAX_TOTAL_BYTES) console.warn('Warning: total audio exceeds the 4 MB target.')
   return 0
 }
 

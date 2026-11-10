@@ -32,6 +32,7 @@ export interface HauntingModule {
     effects: HauntEffectsHandle;
     motion: MotionPreference;
     seed: number;
+    getState(): GameState | undefined;
   }): HauntingHandle;
 }
 
@@ -109,6 +110,7 @@ export function createHauntingLoader(deps: HauntingLoaderDeps): (mode: Mode) => 
           effects,
           motion: host.motion,
           seed: deps.seed,
+          getState: () => deps.getHost()?.engineState,
         });
       }
       try {

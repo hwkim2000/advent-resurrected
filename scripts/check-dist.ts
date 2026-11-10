@@ -9,6 +9,7 @@ import { dirname, extname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Window } from 'happy-dom'
 import { HAUNT_CHUNK_MARKER } from '../src/haunt/haunting'
+import { HINT_TABLE_MARKER } from '../src/haunt/hints'
 import { GHOST_VOICE_CHUNK_MARKER } from '../src/ui/dom/ghost-voice'
 import { VOICE_DISCLOSURE_TEXT } from '../src/shared/voice-disclosure'
 import { findCredentials } from './credential-patterns'
@@ -272,6 +273,7 @@ export function checkDist(distDir: string): string[] {
   checkVoice(distDir, errors)
   checkHaunt(distDir, errors)
   checkGhostVoice(distDir, errors)
+  checkLazyMarker(distDir, errors, HINT_TABLE_MARKER, 'hint table')
 
   // Credential scan over every text file; patterns are reported, never the matched text.
   for (const file of listTextFiles(distDir)) {

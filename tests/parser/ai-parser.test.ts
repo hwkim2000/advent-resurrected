@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AiParser } from '../../src/parser/ai-parser';
+import { CommandMemory } from '../../src/parser/game-context';
 import type { AiParserDeps } from '../../src/parser/ai-parser';
 import type { InputResolver, ResolveContext } from '../../src/ui/input-resolver';
 import { FakeFetch } from '../support/ai-client-fakes';
@@ -53,6 +54,39 @@ describe('AiParser', () => {
     expect(init.credentials).toBe('omit');
     expect(init.redirect).toBe('error');
     expect(init.cache).toBe('no-store');
+  });
+
+  describe('GHOST sentinel', () => {
+    it.each(['GHOST', 'ghost', ' Ghost '])('maps a decoded %j answer to translated GHOST', async (answer) => {
+      const { parser, ctx } = setup([{ kind: 'respond', status: 200, body: JSON.stringify({ command: answer }) }]);
+      const out = await parser.translate('I am hopelessly confused', ctx, new AbortController().signal);
+      expect(out).toEqual({ kind: 'translated', command: 'GHOST' });
+    });
+
+    it('rejects other invalid outputs and keeps the sentinel strict', async () => {
+      for (const command of ['GHOSTS', 'GHOST LAMP', 'NOCOMMAND', 'QUIT', '']) {
+        const { parser, ctx } = setup([{ kind: 'respond', status: 200, body: JSON.stringify({ command }) }]);
+        const out = await parser.translate('I am hopelessly confused', ctx, new AbortController().signal);
+        expect(out).toEqual({ kind: 'fallback', notice: true });
+      }
+    });
+
+    it('lets ghost lines and phrases through with no request', async () => {
+      const { fake, parser, ctx } = setup([{ kind: 'respond', status: 200, body: '{"command":"GHOST"}' }]);
+      const s = new AbortController().signal;
+      for (const line of ['ghost help', 'Ghost, where do I go?', "I'm stuck", 'what now']) {
+        expect(parser.needsTranslation(line, ctx)).toBe(false);
+        expect(await parser.translate(line, ctx, s)).toEqual({ kind: 'fallback', notice: false });
+      }
+      expect(fake.calls).toHaveLength(0);
+      expect(parser.needsTranslation('please wander about', ctx)).toBe(true);
+    });
+
+    it('CommandMemory ignores GHOST (not a valid command)', () => {
+      const m = new CommandMemory();
+      m.note('GHOST');
+      expect(m.last).toEqual([]);
+    });
   });
 
   it('times out at the budget, prints one notice, and opens the circuit after three failures', async () => {

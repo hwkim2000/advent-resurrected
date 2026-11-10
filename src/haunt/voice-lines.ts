@@ -8,6 +8,7 @@ import {
   ALL_POOLS,
   REINCARNATION_COUNTDOWN,
 } from './lines';
+import { HINT_POOLS } from './hints';
 import { DEFLECTION_LINE } from './spoken-word-rule';
 import { NUDGE_LINES } from './yes-no';
 
@@ -31,6 +32,7 @@ export function voiceKey(text: string): string {
 export function voiceLines(): readonly string[] {
   const all: string[] = [REINCARNATION_COUNTDOWN, DEFLECTION_LINE, ...NUDGE_LINES];
   for (const pool of Object.values(ALL_POOLS)) all.push(...pool);
+  for (const pool of Object.values(HINT_POOLS)) all.push(...pool);
   const unique = new Set(all.map(normalizeVoiceLine).filter((l) => l.length > 0));
   return [...unique].sort();
 }

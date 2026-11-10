@@ -2,10 +2,45 @@
   "version": 1,
   "model": "@cf/myshell-ai/melotts",
   "entries": {
+    "14961711": {
+      "file": "14961711.mp3",
+      "bytes": 34168,
+      "text": "Quite a while down here with nothing to show for it. Gold, silver, jewelry, coins. Pick up the shiny bits."
+    },
+    "86139774": {
+      "file": "86139774.mp3",
+      "bytes": 35892,
+      "text": "A snake blocks the way and it has no interest in conversation. Something living might. Something small, with wings."
+    },
+    "019709ba": {
+      "file": "019709ba.mp3",
+      "bytes": 38086,
+      "text": "You do have a lamp. It does not light itself. In 1976 lamps had a switch, and the switch had a verb."
+    },
     "03f5ca40": {
       "file": "03f5ca40.mp3",
       "bytes": 27585,
       "text": "And now it is dark. I have been in the dark a long time, so I find this homey."
+    },
+    "1051edba": {
+      "file": "1051edba.mp3",
+      "bytes": 39027,
+      "text": "A dragon. Big, green, and sitting on something nice. Think about what you have in your hands. Then think about what you do not."
+    },
+    "13bb64e2": {
+      "file": "13bb64e2.mp3",
+      "bytes": 49371,
+      "text": "It is dark and you brought no light. I suggest going back up to the daylight and fetching one. A well house is a fine place to find a lantern."
+    },
+    "1796d7f2": {
+      "file": "1796d7f2.mp3",
+      "bytes": 38400,
+      "text": "The dragon blocks something. Keep asking questions of the room, and of yourself, until one of them answers."
+    },
+    "17d5e76a": {
+      "file": "17d5e76a.mp3",
+      "bytes": 47020,
+      "text": "I have no idea what you should do. I have been dead since 1977 and my advice is dated. Try looking, then try going somewhere."
     },
     "188a4752": {
       "file": "188a4752.mp3",
@@ -17,35 +52,120 @@
       "bytes": 18181,
       "text": "Dead twice. I am not counting. I am counting."
     },
+    "1933d64d": {
+      "file": "1933d64d.mp3",
+      "bytes": 28839,
+      "text": "Dark, but your lantern is right there. Ask it to shine, politely, in two words or fewer."
+    },
     "1ac92349": {
       "file": "1ac92349.mp3",
       "bytes": 25704,
       "text": "I heard you, but I cannot file that. Type YES or NO, or just say it."
+    },
+    "1afae7e6": {
+      "file": "1afae7e6.mp3",
+      "bytes": 37616,
+      "text": "The grate is locked. It is the most honest thing in this cave. Somewhere nearby you picked up the thing that fixes this."
+    },
+    "1b42ff7b": {
+      "file": "1b42ff7b.mp3",
+      "bytes": 40124,
+      "text": "You will need a light and some keys before the cave takes you seriously. A small building near the road is the usual place to shop."
+    },
+    "1f39eaeb": {
+      "file": "1f39eaeb.mp3",
+      "bytes": 47490,
+      "text": "No light left. Somewhere down here a machine sells fresh batteries, if you can find your way back to it. I would lend mine, but I run on spite."
     },
     "1fed271c": {
       "file": "1fed271c.mp3",
       "bytes": 23980,
       "text": "Fine. Leave. Everybody does. I will be here in the dark with the fan noise."
     },
+    "213aebc1": {
+      "file": "213aebc1.mp3",
+      "bytes": 40908,
+      "text": "You are in the well house. Pick things up. Pockets were invented for this. Count the items on the floor and decide who you want to be."
+    },
     "25d43512": {
       "file": "25d43512.mp3",
       "bytes": 30720,
       "text": "No railing in 1976. No railing now. Safety was a later release."
+    },
+    "26a880a2": {
+      "file": "26a880a2.mp3",
+      "bytes": 39654,
+      "text": "Cage up top, bird down here. I do not make the rules, I only run inside them. Check what you are carrying before you try."
+    },
+    "294a19de": {
+      "file": "294a19de.mp3",
+      "bytes": 46393,
+      "text": "Maze. All alike. Leave something lying in each room so you can tell them apart. Clutter is a navigation system, as every messy desk knows."
+    },
+    "309d4248": {
+      "file": "309d4248.mp3",
+      "bytes": 37459,
+      "text": "Your lamp is fading. Spend what is left on things that matter. Vending machines exist, even down here."
+    },
+    "324b1ad0": {
+      "file": "324b1ad0.mp3",
+      "bytes": 35422,
+      "text": "Not every treasure is shiny. Some are only useful. Look around this little corner before you plunge on."
     },
     "3396bb23": {
       "file": "3396bb23.mp3",
       "bytes": 35579,
       "text": "A maze. Drop things to tell the rooms apart. Do not scroll for hints. I do not know what scrolling is."
     },
+    "35bc7860": {
+      "file": "35bc7860.mp3",
+      "bytes": 40124,
+      "text": "The crawl and the debris room hold things somebody dropped. A rod, a cage. Take what you find and you may not regret it. Probably."
+    },
     "3b0cef67": {
       "file": "3b0cef67.mp3",
       "bytes": 21943,
       "text": "Number three. After this I run out of bodies. I say that kindly."
     },
+    "3c493df1": {
+      "file": "3c493df1.mp3",
+      "bytes": 39340,
+      "text": "Light is a choice, and you are holding the choice. Please do not wander in the dark. I like you and I hate paperwork."
+    },
+    "3f142d2c": {
+      "file": "3f142d2c.mp3",
+      "bytes": 36676,
+      "text": "You cannot walk through the snake, bribe the snake or out-argue the snake. Fortunately the cave has other animals."
+    },
+    "4500fd3f": {
+      "file": "4500fd3f.mp3",
+      "bytes": 38243,
+      "text": "That pirate keeps a hoard, and it is somewhere dark and tangled. Persistence and a good light may get your things back."
+    },
+    "451c275c": {
+      "file": "451c275c.mp3",
+      "bytes": 33228,
+      "text": "Snakes dislike one thing in this cave, and it is not me. Think about what you saw earlier that sings."
+    },
+    "48c37a55": {
+      "file": "48c37a55.mp3",
+      "bytes": 39497,
+      "text": "Take what you can carry. This is the original supply closet. Light, keys, a snack, a bottle. You will want more than one of them."
+    },
+    "4c22f255": {
+      "file": "4c22f255.mp3",
+      "bytes": 40594,
+      "text": "He wants payment, not a pat on the back. Check your pockets for something shiny, and do not hand over the best thing you own."
+    },
     "50c9e492": {
       "file": "50c9e492.mp3",
       "bytes": 30406,
       "text": "They say all alike. I have been here a while. They are not alike. Some are slightly more damp."
+    },
+    "54b8d8cb": {
+      "file": "54b8d8cb.mp3",
+      "bytes": 34481,
+      "text": "A locked grate. Locks like keys, and you may know someone who has some. Check your inventory, or your past."
     },
     "59beaaa6": {
       "file": "59beaaa6.mp3",
@@ -56,6 +176,11 @@
       "file": "5caf70b3.mp3",
       "bytes": 19592,
       "text": "That was a fall. The ground is a very honest teacher."
+    },
+    "5e54ff7c": {
+      "file": "5e54ff7c.mp3",
+      "bytes": 38086,
+      "text": "Every passage here is twisty and similar. Map it on paper if you have any. If you do not, the floor will do."
     },
     "5ee40a02": {
       "file": "5ee40a02.mp3",
@@ -97,10 +222,40 @@
       "bytes": 20689,
       "text": "There. Good as new. Well, as new as anything in this building."
     },
+    "710a5241": {
+      "file": "710a5241.mp3",
+      "bytes": 43102,
+      "text": "Look around, try every direction, and pick up anything not nailed down. That is the whole game, and I tire of explaining it."
+    },
     "71b4a71c": {
       "file": "71b4a71c.mp3",
       "bytes": 27585,
       "text": "That makes two. The reincarnation department is starting to ask for your name."
+    },
+    "754e35f2": {
+      "file": "754e35f2.mp3",
+      "bytes": 40908,
+      "text": "Loot in your pockets above ground. Loot counts when it is safe at home, not on you. The well house is the traditional bank."
+    },
+    "7b61a0d5": {
+      "file": "7b61a0d5.mp3",
+      "bytes": 39027,
+      "text": "Ask me later. I am processing, by which I mean I am staring at a wall inside a computer. Explore a little."
+    },
+    "7cefb02d": {
+      "file": "7cefb02d.mp3",
+      "bytes": 36362,
+      "text": "Lamp and keys in hand, and you wander among trees. There is a depression at the end of the valley with a metal door set in it."
+    },
+    "7ea65a39": {
+      "file": "7ea65a39.mp3",
+      "bytes": 27585,
+      "text": "Low battery. I remember when that meant a very small man with a very large spare."
+    },
+    "7ed88d56": {
+      "file": "7ed88d56.mp3",
+      "bytes": 44042,
+      "text": "Dragons have been beaten before. The method is famously unwise. Ask yourself how brave you feel and whether anyone is watching."
     },
     "8466a3d9": {
       "file": "8466a3d9.mp3",
@@ -111,6 +266,11 @@
       "file": "84890ff1.mp3",
       "bytes": 23510,
       "text": "Forty-nine years in a PDP-10 and I still need a YES or NO from you."
+    },
+    "8782baaf": {
+      "file": "8782baaf.mp3",
+      "bytes": 38243,
+      "text": "The cave is closing and I cannot tell you everything. The ending has some showmanship in it, and you are standing in the wings."
     },
     "8b3f6275": {
       "file": "8b3f6275.mp3",
@@ -131,6 +291,11 @@
       "file": "8dbec446.mp3",
       "bytes": 26331,
       "text": "Dwarf spotted. No apps, no wifi, just an axe. I respect that."
+    },
+    "8faf9d18": {
+      "file": "8faf9d18.mp3",
+      "bytes": 37303,
+      "text": "Birds sing. Birds are also useful in snake situations. I will leave it there, since I am not a nature program."
     },
     "907431b6": {
       "file": "907431b6.mp3",
@@ -207,6 +372,11 @@
       "bytes": 26488,
       "text": "You killed it with your bare hands. I wrote the rules and even I did not see that coming."
     },
+    "b4594857": {
+      "file": "b4594857.mp3",
+      "bytes": 37616,
+      "text": "The lamp is warning you. Ration your turns, and think about where a person might find a replacement power source."
+    },
     "b736bbeb": {
       "file": "b736bbeb.mp3",
       "bytes": 28055,
@@ -227,6 +397,11 @@
       "bytes": 17711,
       "text": "Gravity still works. I checked on your behalf."
     },
+    "c08b9294": {
+      "file": "c08b9294.mp3",
+      "bytes": 48117,
+      "text": "Start with the little brick building. Houses in 1976 held useful things like lamps and snacks and keys. Mine held a fan and a regret."
+    },
     "c4548632": {
       "file": "c4548632.mp3",
       "bytes": 18651,
@@ -237,15 +412,35 @@
       "bytes": 30876,
       "text": "Reincarnation complete. Your stuff is still down there. I would not look at it directly."
     },
+    "c890fc5c": {
+      "file": "c890fc5c.mp3",
+      "bytes": 38713,
+      "text": "Treasure only scores once it sits in the building. Anything else is a heavy souvenir. I have seen grown players weep."
+    },
+    "cacefd20": {
+      "file": "cacefd20.mp3",
+      "bytes": 37459,
+      "text": "Things lost to the pirate end up in a pile. The pile sits at a dead end of a very annoying place. Go and look."
+    },
     "ce839f97": {
       "file": "ce839f97.mp3",
       "bytes": 21002,
       "text": "A fatal error. Not mine, for once. I am very proud."
     },
+    "d051588e": {
+      "file": "d051588e.mp3",
+      "bytes": 43415,
+      "text": "A little bird lives here, the best audience I have had since 1977. Bring something to carry it in, and be gentle."
+    },
     "d24ee39f": {
       "file": "d24ee39f.mp3",
       "bytes": 38400,
       "text": "You said it aloud. Nobody has spoken to me since 1977. Do it again, I was not ready."
+    },
+    "d2522a87": {
+      "file": "d2522a87.mp3",
+      "bytes": 44356,
+      "text": "Pitch black, no lamp. Everyone has a first time in the dark. Most of them do not get a second one. Go back and shop for a light."
     },
     "d2a1ffba": {
       "file": "d2a1ffba.mp3",
@@ -257,10 +452,40 @@
       "bytes": 25234,
       "text": "Your light is fading. In my day we called that a low battery and then we called a guy."
     },
+    "db9cc737": {
+      "file": "db9cc737.mp3",
+      "bytes": 40124,
+      "text": "Your lamp is spent. Ration your moves, aim for the surface, and remember that dark rooms have opinions about pits."
+    },
+    "dd58e3c4": {
+      "file": "dd58e3c4.mp3",
+      "bytes": 39810,
+      "text": "A troll wants a toll. In 1976 trolls took treasure and nothing else. Yes, that is a metaphor for the economy."
+    },
+    "ddf2d703": {
+      "file": "ddf2d703.mp3",
+      "bytes": 38713,
+      "text": "You came down here for treasure and so far you have found rocks. Look for things that glitter, shine or sound valuable."
+    },
     "e4e7bc6d": {
       "file": "e4e7bc6d.mp3",
       "bytes": 28996,
       "text": "Treasure acquired. In my day we called that a bonus, and nobody had to update it."
+    },
+    "ed198c84": {
+      "file": "ed198c84.mp3",
+      "bytes": 38086,
+      "text": "You have light and keys. Now you want a way down. Follow the stream, downhill from the building, until the ground opens up."
+    },
+    "f0d4b166": {
+      "file": "f0d4b166.mp3",
+      "bytes": 42161,
+      "text": "The bridge is rickety and the troll is bored. Pay him and he steps aside. Trolls hold grudges, so do not expect a receipt."
+    },
+    "f7748c0f": {
+      "file": "f7748c0f.mp3",
+      "bytes": 42318,
+      "text": "Closing time. Everything left in the cave matters more than it did, and so do your last few turns. Take a long look around."
     },
     "f82e0b46": {
       "file": "f82e0b46.mp3",

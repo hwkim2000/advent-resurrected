@@ -30,7 +30,7 @@ The narrator's spoken lines are pre-generated MP3 files under `public/voice/` (p
 
 - Environment variables (names only, set in your own shell): CLOUDFLARE\_ACCOUNT\_ID and CLOUDFLARE\_API\_TOKEN (backslashes are markdown escapes; the repository credential scan forbids the literal names outside its own files).
 - **ffmpeg** (with libmp3lame) must be on PATH: MeloTTS returns 44.1 kHz WAV, and the script transcodes each line to a mono 22.05 kHz, 48 kbps MP3. The script stops with a clear message if ffmpeg is missing (the dry run does not need it).
-- `npm run gen:voice -- --dry-run` makes no network call; `--force` regenerates everything. Re-runs only generate changed lines.
+- `npm run gen:voice -- --dry-run` makes no network call; `--force` regenerates everything. Re-runs only generate changed lines. The total audio size limit is 4 MB (the script warns above it).
 - Cloudflare lists MeloTTS with a planned deprecation date of **2026-11-20**: run the generation before then and commit the files. Regenerating later would need another model.
 
 ## Deploy to Cloudflare Pages
@@ -87,6 +87,10 @@ Measured on the deployed site (owner fills in after the first deploy): p50 = `TB
 Cost arithmetic: each request uses about 3.1 Neurons. With `DAILY_CAP` = 2000 that is 2000 x 3.1 = 6,200 of the 10,000 free Neurons per day, 62 percent, under the 80 percent limit. The cap must stay at 2,580 or lower (2,580 x 3.1 = 7,998).
 
 Optional flood guard: add a dashboard rate-limiting rule for `/api/parse` on the Cloudflare zone, in addition to the per-address limit in the Function.
+
+### Parser evaluation
+
+`npm run eval:parser -- <base-url>` sends 34 fixed sentences (20 commands, 8 ask-the-ghost lines, 6 negatives) to `<base-url>/api/parse`, 2.5 s apart, and prints a PASS/FAIL table and totals. It exits non-zero if any case fails. Run it against `npm run dev:pages` (`http://127.0.0.1:8788`) or the deployed URL, and re-run it after deploying the prompt change. It uses real Workers AI quota (about 34 requests) and is never run by tests or CI. Model output varies, so an occasional miss is a signal to read, not necessarily a bug.
 
 ### Privacy
 
