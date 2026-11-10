@@ -13,8 +13,9 @@
 import { XYZZY } from '../data/constants';
 import { lookupWord, scanWords } from '../shared/vocabulary';
 
-/** The one fixed Deflection_Line (66 characters). */
-export const DEFLECTION_LINE = 'SAY IT ALOUD. HOLD THE MIC OR ALT+M. TYPE XYZZY AGAIN IF YOU MUST.';
+/** The one fixed Deflection_Line (narrator voice, ASCII, at most 160 characters). */
+export const DEFLECTION_LINE =
+  'Typed? Magic words are spoken. Say it aloud, hold the mic or Alt+M, or type it again if you must. 49 years in here and I still have standards.';
 
 /** Most Deflections per game (kept equal to src/ui/autosave.ts by a test). */
 export const DEFLECTION_LIMIT = 1;

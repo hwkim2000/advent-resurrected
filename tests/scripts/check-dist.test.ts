@@ -3,6 +3,7 @@
 
 import { afterEach, describe, expect, it } from 'vitest'
 import { checkDist, PRIVACY_STATEMENTS } from '../../scripts/check-dist'
+import { HAUNT_CHUNK_MARKER } from '../../src/haunt/haunting'
 import { CREDITS_HTML, cleanupDists, makeDist } from './support/make-dist'
 
 const CRED_TOKEN = 'CLOUDFLARE' + '_API_' + 'TOKEN=abc'
@@ -57,6 +58,26 @@ describe('check-dist', () => {
       },
     })
     expect(checkDist(dir).some((e) => e.includes('@cf/'))).toBe(true)
+  })
+
+  it('fails when the start script contains the haunt chunk marker', () => {
+    const dir = makeDist({ startScript: `const m = "${HAUNT_CHUNK_MARKER}"; import("./voice.js")` })
+    expect(checkDist(dir).some((e) => e.includes('dist/assets/index.js') && e.includes('haunt chunk marker'))).toBe(true)
+  })
+
+  it('fails when no lazy chunk contains the haunt chunk marker', () => {
+    const dir = makeDist({ files: { 'assets/haunt.js': null } })
+    expect(checkDist(dir).some((e) => e.includes('haunt chunk missing'))).toBe(true)
+  })
+
+  it('does not count the start script as the lazy haunt chunk', () => {
+    const dir = makeDist({
+      startScript: `const m = "${HAUNT_CHUNK_MARKER}"`,
+      files: { 'assets/haunt.js': null },
+    })
+    const errors = checkDist(dir).join('\n')
+    expect(errors).toContain('loaded at start')
+    expect(errors).toContain('haunt chunk missing')
   })
 
   it('fails when a privacy statement is missing', () => {

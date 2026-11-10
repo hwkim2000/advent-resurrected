@@ -5,6 +5,8 @@ import type { InputResolver, ResolveContext } from '../../src/ui/input-resolver'
 import { FakeFetch } from '../support/ai-client-fakes';
 import type { FetchBehavior } from '../support/ai-client-fakes';
 import { newGame, cloneState } from '../../src/engine';
+import { carry } from '../../src/engine/objects';
+import { validateCommand } from '../../src/shared/command-validation';
 
 // Task 8.4: AiParser must be assignable to InputResolver (src/ui never imports src/parser).
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -102,5 +104,36 @@ describe('AiParser', () => {
     const p = hang.parser.translate('end it all', hang.ctx, ac.signal);
     ac.abort();
     expect(await p).toEqual({ kind: 'fallback', notice: false });
+  });
+
+  describe('object disambiguation', () => {
+    const LAMP = 2;
+    async function ask(loc: number, text: string, model: string, carried = false) {
+      const { parser, ctx } = setup([{ kind: 'respond', status: 200, body: JSON.stringify({ command: model }) }]);
+      if (carried) carry(ctx.state!.game, LAMP, 3);
+      ctx.state!.game.loc = loc;
+      return parser.translate(text, ctx, new AbortController().signal);
+    }
+
+    it('corrects "grab the lab" to TAKE LAMP when the lamp is visible', async () => {
+      expect(await ask(3, 'grab the lab', 'TAKE FOOD')).toEqual({ kind: 'translated', command: 'TAKE LAMP' });
+    });
+
+    it('corrects to a carried lamp', async () => {
+      expect(await ask(1, 'drop the lab', 'DROP FOOD', true)).toEqual({ kind: 'translated', command: 'DROP LAMP' });
+    });
+
+    it('is unchanged when the lamp is absent', async () => {
+      expect(await ask(1, 'grab the lab', 'TAKE FOOD')).toEqual({ kind: 'translated', command: 'TAKE FOOD' });
+    });
+
+    it('is unchanged when the text supports the model object', async () => {
+      expect(await ask(3, 'please take the keys', 'TAKE KEYS')).toEqual({ kind: 'translated', command: 'TAKE KEYS' });
+    });
+
+    it('always yields a valid command', async () => {
+      const out = await ask(3, 'grab the lab', 'TAKE FOOD');
+      expect(out.kind === 'translated' && validateCommand(out.command).ok).toBe(true);
+    });
   });
 });

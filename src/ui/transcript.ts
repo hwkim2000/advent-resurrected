@@ -35,7 +35,7 @@ export class Transcript {
    */
   tail(n: number, kinds?: readonly LineKind[]): TranscriptLine[] {
     if (n <= 0) return [];
-    const allowed = kinds ?? (['original', 'input', 'notice', 'narrator'] as const);
+    const allowed = kinds ?? (['original', 'input', 'spoken', 'notice', 'narrator'] as const);
     const picked = this.store.filter((l) => allowed.includes(l.kind));
     return picked.slice(-n).map((l) => ({ ...l }));
   }

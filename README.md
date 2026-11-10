@@ -176,6 +176,10 @@ Done by the project owner in their own terminal and browsers; no agent or CI ste
 
 Tests run with `npx vitest --run`. Engine tests run in the default Node environment. UI tests that need a DOM use `happy-dom` (pinned to 21.0.4) through the per-file docblock `// @vitest-environment happy-dom` on the first line of the test file. The verification spike confirmed this works with the pinned Vitest 5.1.0 without any config fallback, and that Node-environment tests still see no `document`.
 
+### Layout check (MIC visibility)
+
+Run `npm run build` first, then `npm run check:layout`. The script serves `dist/` itself (vite preview on port 4173) and drives an installed Edge or Chrome through `playwright-core` (no browser download; set `CHROME_PATH` or `EDGE_PATH` to use a specific executable). It asserts the MIC, its disclosure and the input line stay on screen at 1280x720, 1366x768 and 1024x600, and reports other sizes without failing. It is a local script, not part of CI.
+
 ## Credits
 
 Based on *Colossal Cave Adventure* by Will Crowther and Don Woods,

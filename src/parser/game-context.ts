@@ -39,6 +39,25 @@ function visibleObjectIndexes(state: GameState): number[] {
   return [...seen].sort((a, b) => a - b);
 }
 
+/**
+ * Word lists (OBJECTS[i].words) of the objects the player could mean: the ones
+ * in the room (none when dark) followed by the carried ones. Read-only.
+ */
+export function candidateObjectWords(state: GameState): string[][] {
+  const game = state.game;
+  const indexes: number[] = [];
+  if (!isDarkHere(game)) indexes.push(...visibleObjectIndexes(state));
+  for (let obj = 1; obj < NOBJECTS; obj++) {
+    if (game.objects[obj] !== undefined && toting(game, obj) && !indexes.includes(obj)) indexes.push(obj);
+  }
+  const out: string[][] = [];
+  for (const obj of indexes) {
+    const words = OBJECTS[obj]?.words;
+    if (words !== undefined && words.length > 0) out.push([...words]);
+  }
+  return out;
+}
+
 /** Build the Game_Context for the current state. Does not modify the state. */
 export function buildGameContext(state: GameState, last: readonly string[]): GameContext {
   const game = state.game;

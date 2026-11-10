@@ -7,6 +7,8 @@
  * (through injected dependencies).
  */
 import { validateCommand } from '../shared/command-validation';
+import type { GameState } from '../engine/types';
+import { pickClosestObject } from '../shared/object-match';
 import { decodeErrorBody, decodeSuccess, encodeRequest } from '../shared/protocol';
 import {
   AI_BUDGET_MS,
@@ -19,7 +21,7 @@ import {
 } from './config';
 import { classifyInput } from './eligibility';
 import type { ResolveInput } from './eligibility';
-import { CommandMemory, buildGameContext } from './game-context';
+import { CommandMemory, buildGameContext, candidateObjectWords } from './game-context';
 
 export interface AiParserDeps {
   fetch: (input: string, init: RequestInit) => Promise<Response>;
@@ -138,7 +140,19 @@ export class AiParser {
     });
 
     const raw = await this.send(body, signal);
-    return this.interpret(raw);
+    const outcome = this.interpret(raw);
+    if (outcome.kind !== 'translated') return outcome;
+    return { kind: 'translated', command: this.disambiguate(eligibility.text, outcome.command, state) };
+  }
+
+  /** Swap a hallucinated object for the near-miss object that is here or carried. */
+  private disambiguate(text: string, command: string, state: GameState): string {
+    try {
+      return pickClosestObject(text, command, candidateObjectWords(state));
+    } catch (cause) {
+      this.deps.log.error('ai-parser: disambiguation failed', cause);
+      return command;
+    }
   }
 
   /** One request, bounded by the budget; settles exactly once and ignores late results. */

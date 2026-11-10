@@ -15,7 +15,7 @@ import {
 } from './autosave';
 import { BOOT_CPS, selectBoot } from './boot-script';
 import { lastPromptOf, originalTextOf, splitIntoLines } from './event-render';
-import type { ExtensionHooks, HookContext } from './extension-hooks';
+import type { ExtensionHooks, HookContext, TurnInfo } from './extension-hooks';
 import type { GamePhase, InputResolver, ResolveContext, TranslateOutcome } from './input-resolver';
 import {
   emptyHistory,
@@ -415,7 +415,7 @@ export class GameController {
       this.prompt = DEFAULT_PROMPT;
       this.setPhase('ready');
       this.deps.view.showMode(this.current.mode, this.gameMode);
-      this.present(result.events);
+      this.present(result.events, undefined, '', 'typed');
     } catch (e) {
       this.deps.log.error('engine start failed', e);
       this.state = undefined;
@@ -472,7 +472,7 @@ export class GameController {
       if (word === '' || word === 'NEW') {
         this.startFresh();
       } else {
-        this.echo(line);
+        this.echo(line, origin);
         this.notice(this.overNotice());
       }
       return;
@@ -480,7 +480,7 @@ export class GameController {
 
     const before = this.state;
     if (before === undefined) return;
-    this.echo(line);
+    this.echo(line, origin);
 
     const resolver = this.resolver;
     if (resolver !== undefined) {
@@ -591,7 +591,7 @@ export class GameController {
     const transformed = this.deps.hooks.transformInput(text, this.ctx());
     const gate = this.deps.hooks.gateInput(transformed, origin, this.deflections, this.ctx());
     if (gate.kind === 'deflect') {
-      this.applyDeflection(gate.lines);
+      this.applyDeflection(gate.lines, gate.count);
       return;
     }
     let result;
@@ -603,7 +603,7 @@ export class GameController {
       return;
     }
     this.state = result.state;
-    this.present(result.events);
+    this.present(result.events, before, transformed, origin);
     if (wasCommand && this.resolver !== undefined) {
       const resolver = this.resolver;
       this.safeVoid(() => resolver.accepted(text));
@@ -611,7 +611,12 @@ export class GameController {
   }
 
   /** Shows the outcome of one engine call; the Original_Text always comes first. */
-  private present(events: readonly OutputEvent[]): void {
+  private present(
+    events: readonly OutputEvent[],
+    before: GameState | undefined,
+    line: string,
+    origin: InputOrigin,
+  ): void {
     const state = this.state;
     if (state === undefined) return;
 
@@ -629,9 +634,10 @@ export class GameController {
 
     const copy = Object.freeze([...events]);
     const ctx = this.ctx();
-    this.deps.hooks.observeEvents(copy, ctx);
-    for (const line of this.deps.hooks.narratorLines(copy, ctx)) {
-      this.emit('narrator', line + '\n');
+    const turn: TurnInfo = { before, after: state, line, origin };
+    this.deps.hooks.observeEvents(copy, ctx, turn);
+    for (const narration of this.deps.hooks.narratorLines(copy, ctx, turn)) {
+      this.emit('narrator', narration + '\n');
     }
 
     if (!over) this.deps.view.setPrompt(this.prompt);
@@ -657,8 +663,8 @@ export class GameController {
   }
 
   /** A gate refused the line: narrate it, count it, keep the engine untouched. */
-  private applyDeflection(lines: readonly string[]): void {
-    this.deflections = Math.min(DEFLECTION_LIMIT, this.deflections + 1);
+  private applyDeflection(lines: readonly string[], count?: false): void {
+    if (count !== false) this.deflections = Math.min(DEFLECTION_LIMIT, this.deflections + 1);
     for (const line of lines) this.emit('narrator', line + '\n');
     this.persistAutosave();
   }
@@ -678,8 +684,9 @@ export class GameController {
   }
 
   /** Input echo: prompt text plus the raw line, shown at once. */
-  private echo(line: string): void {
-    const echoed = [{ kind: 'input' as const, text: this.prompt.text + line, eol: true }];
+  private echo(line: string, origin: InputOrigin): void {
+    const kind = origin === 'spoken' ? ('spoken' as const) : ('input' as const);
+    const echoed = [{ kind, text: this.prompt.text + line, eol: true }];
     this.transcript.append(echoed);
     this.deps.view.appendInstant(echoed);
     this.deps.view.trimTo(MAX_TRANSCRIPT_LINES);

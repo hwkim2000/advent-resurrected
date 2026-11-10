@@ -8,6 +8,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, extname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Window } from 'happy-dom'
+import { HAUNT_CHUNK_MARKER } from '../src/haunt/haunting'
 import { VOICE_DISCLOSURE_TEXT } from '../src/shared/voice-disclosure'
 import { findCredentials } from './credential-patterns'
 import { checkHeadersPolicy } from './headers-policy'
@@ -144,6 +145,47 @@ function checkVoice(distDir: string, errors: string[]): void {
   }
   if (!found) errors.push('no .js file under dist/assets contains SpeechRecognition (voice chunk missing)')
 }
+
+/**
+ * Haunting isolation (haunting Requirement 7): the start-time scripts must not contain the
+ * haunt chunk marker, and some lazily loaded .js under dist/assets must.
+ */
+function checkHaunt(distDir: string, errors: string[]): void {
+  const indexPath = join(distDir, 'index.html')
+  const startFiles = new Set<string>()
+  if (isFile(indexPath)) {
+    const html = readFileSync(indexPath, 'utf8')
+    const re = /<(script|link)\b[^>]*>/gi
+    for (let m = re.exec(html); m !== null; m = re.exec(html)) {
+      const tag = m[0]
+      const attr = /\b(?:src|href)\s*=\s*(?:"([^"]*)"|'([^']*)')/i.exec(tag)
+      const raw = (attr?.[1] ?? attr?.[2] ?? '').trim()
+      if (raw === '') continue
+      const isScript = m[1]?.toLowerCase() === 'script'
+      if (!isScript && !/\brel\s*=\s*["']?[^"'>]*modulepreload/i.test(tag)) continue
+      if (/^[a-z][a-z0-9+.-]*:/i.test(raw) || raw.startsWith('//')) continue
+      const rel = (raw.split(/[?#]/)[0] ?? '').replace(/^\/+/, '')
+      if (rel !== '') startFiles.add(rel)
+    }
+  }
+  for (const rel of startFiles) {
+    const target = join(distDir, rel)
+    if (isFile(target) && readFileSync(target, 'utf8').includes(HAUNT_CHUNK_MARKER)) {
+      errors.push(`dist/${rel}: loaded at start but contains the haunt chunk marker (haunt code must load lazily)`)
+    }
+  }
+
+  const assets = join(distDir, 'assets')
+  const startAbs = new Set([...startFiles].map((r) => resolve(distDir, r)))
+  const found =
+    existsSync(assets) &&
+    listTextFiles(assets).some(
+      (f) =>
+        f.endsWith('.js') && !startAbs.has(resolve(f)) && readFileSync(f, 'utf8').includes(HAUNT_CHUNK_MARKER),
+    )
+  if (!found) errors.push('no lazily loaded .js under dist/assets contains the haunt chunk marker (haunt chunk missing)')
+}
+
 /** Runs every check against `distDir`; returns the list of failures (empty when OK). */
 export function checkDist(distDir: string): string[] {
   const errors: string[] = []
@@ -214,6 +256,7 @@ export function checkDist(distDir: string): string[] {
   }
 
   checkVoice(distDir, errors)
+  checkHaunt(distDir, errors)
 
   // Credential scan over every text file; patterns are reported, never the matched text.
   for (const file of listTextFiles(distDir)) {

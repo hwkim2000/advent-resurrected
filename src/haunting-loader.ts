@@ -1,0 +1,134 @@
+// Lazy haunting loading policy (haunting spec, Requirements 1-5 and 7). No
+// reference to src/haunt here: main.ts supplies the dynamic import()s.
+// Structural types only, the same pattern as ai-loader.ts and voice-loader.ts.
+
+import type { GameState } from './engine/index';
+import type { ExtensionHooks } from './ui/extension-hooks';
+import type { Logger, Mode, MotionPreference } from './ui/types';
+
+export interface HauntingHandle {
+  gameStart(state: GameState | undefined): void;
+  dispose(): void;
+}
+
+export interface HauntEffectsHandle {
+  setDim(level: number): void;
+  flashGlitch(): void;
+  reincarnate(): void;
+  reset(): void;
+}
+
+/** The lazy src/haunt/haunting chunk. */
+export interface HauntingModule {
+  createHaunting(deps: {
+    hooks: ExtensionHooks;
+    effects: HauntEffectsHandle;
+    motion: MotionPreference;
+    seed: number;
+  }): HauntingHandle;
+}
+
+/** The lazy src/ui/dom/haunt-effects chunk. */
+export interface HauntEffectsModule {
+  createHauntEffects(deps: { motion: MotionPreference }): HauntEffectsHandle;
+}
+
+export interface HauntingHost {
+  readonly hooks: ExtensionHooks;
+  readonly motion: MotionPreference;
+  readonly engineState: GameState | undefined;
+}
+
+export interface HauntingLoaderDeps {
+  getHost(): HauntingHost | undefined;
+  log: Logger;
+  loadHaunting(): Promise<HauntingModule>;
+  loadEffects(): Promise<HauntEffectsModule>;
+  /** Seed for the narrator picker; main.ts decides (for example Date.now()). */
+  seed: number;
+}
+
+/**
+ * Loads the haunt and effects chunks on the first Haunted game start (never in
+ * 1976 mode, one load at a time, a successful load is kept). On every Haunted
+ * start it calls gameStart with the engine state; on a 1976 start it disposes
+ * the haunting and resets the effects. Never awaited on the game path.
+ */
+export function createHauntingLoader(deps: HauntingLoaderDeps): (mode: Mode) => void {
+  let latestMode: Mode | undefined;
+  let loading = false;
+  let modules: { haunting: HauntingModule; effects: HauntEffectsModule } | undefined;
+  let effects: HauntEffectsHandle | undefined;
+  let active: HauntingHandle | undefined;
+
+  function deactivate(): void {
+    const a = active;
+    active = undefined;
+    try {
+      a?.dispose();
+    } catch (e) {
+      deps.log.error('haunting dispose failed', e);
+    }
+    try {
+      effects?.reset();
+    } catch (e) {
+      deps.log.error('haunt effects reset failed', e);
+    }
+  }
+
+  function apply(): void {
+    if (modules === undefined) return;
+    try {
+      const host = deps.getHost();
+      if (host === undefined) throw new Error('haunting host unavailable');
+      if (active === undefined) {
+        effects ??= modules.effects.createHauntEffects({ motion: host.motion });
+        active = modules.haunting.createHaunting({
+          hooks: host.hooks,
+          effects,
+          motion: host.motion,
+          seed: deps.seed,
+        });
+      }
+      active.gameStart(host.engineState);
+    } catch (e) {
+      deps.log.error('haunting failed to start', e);
+    }
+  }
+
+  function startLoad(): void {
+    loading = true;
+    let pending: Promise<[HauntingModule, HauntEffectsModule]>;
+    try {
+      pending = Promise.all([deps.loadHaunting(), deps.loadEffects()]);
+    } catch (e) {
+      loading = false;
+      deps.log.error('haunting failed to load', e);
+      return;
+    }
+    pending.then(
+      ([haunting, fx]) => {
+        loading = false;
+        modules = { haunting, effects: fx };
+        if (latestMode === 'haunted') apply();
+      },
+      (e: unknown) => {
+        loading = false;
+        deps.log.error('haunting failed to load', e);
+      },
+    );
+  }
+
+  return (mode) => {
+    latestMode = mode;
+    if (mode === '1976') {
+      deactivate();
+      return;
+    }
+    if (modules !== undefined) {
+      apply();
+      return;
+    }
+    if (!loading) startLoad();
+  };
+}

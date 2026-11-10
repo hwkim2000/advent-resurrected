@@ -32,6 +32,7 @@ export interface Restored {
 export const AUTOSAVE_LINE_KINDS: readonly LineKind[] = [
   'original',
   'input',
+  'spoken',
   'translation',
   'notice',
   'narrator',
@@ -40,6 +41,7 @@ export const AUTOSAVE_LINE_KINDS: readonly LineKind[] = [
 const LINE_KINDS: readonly LineKind[] = [
   'original',
   'input',
+  'spoken',
   'translation',
   'notice',
   'narrator',

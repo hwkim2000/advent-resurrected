@@ -20,6 +20,8 @@ import { installViewportTracking } from './ui/dom/viewport';
 import { createHauntedStartLoader } from './ai-loader';
 import type { AiParserModule } from './ai-loader';
 import { createGameStartFanOut } from './game-start-fanout';
+import { createHauntingLoader } from './haunting-loader';
+import type { HauntEffectsModule, HauntingModule } from './haunting-loader';
 import { createVoiceStartLoader } from './voice-loader';
 import type { HauntModule, VoiceModule } from './voice-loader';
 import { installMicButton } from './ui/dom/mic-button';
@@ -31,6 +33,9 @@ const loadParserModule = (): Promise<AiParserModule> => import('./parser/browser
 /** Dynamic imports only: the voice and haunt layers stay out of the start script. */
 const loadVoiceModule = (): Promise<VoiceModule> => import('./voice/browser');
 const loadHauntModule = (): Promise<HauntModule> => import('./haunt/spoken-word-rule');
+
+const loadHauntingModule = (): Promise<HauntingModule> => import('./haunt/haunting');
+const loadHauntEffectsModule = (): Promise<HauntEffectsModule> => import('./ui/dom/haunt-effects');
 
 function main(): void {
   const els = findTerminalElements();
@@ -63,6 +68,7 @@ function main(): void {
   const view = new BusyTrackingView(els);
 
   const log = createLogger();
+  const motion = createMotionPreference();
   const hooks = new ExtensionHooks(log);
   // The AI parser chunk loads only when a Haunted game starts (never in 1976 mode).
   const aiLoader = { onGameStart: createHauntedStartLoader(() => controller, log, loadParserModule) };
@@ -107,11 +113,32 @@ function main(): void {
       mic.attach(layer.port);
     },
   });
-  const onGameStart = createGameStartFanOut([aiLoader.onGameStart, voiceLoader.onGameStart], log);
+  // Haunting (narrator, dim, glitch, reincarnation): chunks load on the first Haunted start.
+  const hauntingStart = createHauntingLoader({
+    getHost: () => {
+      const c = controller;
+      if (!c) return undefined;
+      return {
+        hooks,
+        motion,
+        get engineState() {
+          return c.engineState;
+        },
+      };
+    },
+    log,
+    loadHaunting: loadHauntingModule,
+    loadEffects: loadHauntEffectsModule,
+    seed: Date.now() | 0,
+  });
+  const onGameStart = createGameStartFanOut(
+    [aiLoader.onGameStart, voiceLoader.onGameStart, hauntingStart],
+    log,
+  );
   const ctl = new GameController({
     kv,
     clock: createClock(),
-    motion: createMotionPreference(),
+    motion,
     view,
     hooks,
     log,

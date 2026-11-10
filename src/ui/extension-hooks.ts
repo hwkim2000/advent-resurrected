@@ -1,7 +1,7 @@
 // Typed extension registry for later specs (voice, AI, narrator, haunting).
 // Pure: no browser globals. Gated on Game_Mode inside the registry itself.
 
-import type { OutputEvent } from '../engine/index';
+import type { GameState, OutputEvent } from '../engine/index';
 import type { InputOrigin, LineKind, Logger, Mode, PromptKind } from './types';
 
 export interface HookContext {
@@ -15,17 +15,32 @@ export interface OutputBlock {
   readonly kind: LineKind;
 }
 
+/** What happened in one engine call; handed to providers and observers. */
+export interface TurnInfo {
+  /** State before the call; undefined on the first present() of a game. */
+  readonly before: GameState | undefined;
+  readonly after: GameState;
+  /** Text given to the engine (after input transformers); '' at game start. */
+  readonly line: string;
+  readonly origin: InputOrigin;
+}
+
 export type InputTransformer = (line: string, ctx: HookContext) => string;
-export type EventObserver = (events: readonly OutputEvent[], ctx: HookContext) => void;
+export type EventObserver = (
+  events: readonly OutputEvent[],
+  ctx: HookContext,
+  turn: TurnInfo,
+) => void;
 export type NarratorLineProvider = (
   events: readonly OutputEvent[],
   ctx: HookContext,
+  turn: TurnInfo,
 ) => readonly string[];
 export type OutputListener = (block: OutputBlock, ctx: HookContext) => void;
 
 export type GateResult =
   | { readonly kind: 'allow' }
-  | { readonly kind: 'deflect'; readonly lines: readonly string[] }; // 1 to 3 non-empty strings
+  | { readonly kind: 'deflect'; readonly lines: readonly string[]; readonly count?: false }; // 1 to 3 non-empty strings
 
 export type InputGate = (
   text: string,
@@ -39,15 +54,16 @@ const ALLOW: GateResult = Object.freeze({ kind: 'allow' });
 /** Returns a fresh frozen deflect copy if `out` is a valid deflect, else undefined. */
 function validDeflect(out: unknown): GateResult | undefined {
   if (typeof out !== 'object' || out === null) return undefined;
-  const r = out as { kind?: unknown; lines?: unknown };
+  const r = out as { kind?: unknown; lines?: unknown; count?: unknown };
   if (r.kind !== 'deflect' || !Array.isArray(r.lines)) return undefined;
   const lines: unknown[] = r.lines;
   if (lines.length < 1 || lines.length > 3) return undefined;
   if (!lines.every((s) => typeof s === 'string' && s.length > 0)) return undefined;
-  return Object.freeze({
-    kind: 'deflect' as const,
-    lines: Object.freeze([...(lines as string[])]),
-  });
+  const frozenLines = Object.freeze([...(lines as string[])]);
+  if (r.count === false) {
+    return Object.freeze({ kind: 'deflect' as const, lines: frozenLines, count: false as const });
+  }
+  return Object.freeze({ kind: 'deflect' as const, lines: frozenLines });
 }
 
 function isAllow(out: unknown): boolean {
@@ -126,25 +142,25 @@ export class ExtensionHooks {
     return current;
   }
 
-  observeEvents(events: readonly OutputEvent[], ctx: HookContext): void {
+  observeEvents(events: readonly OutputEvent[], ctx: HookContext, turn: TurnInfo): void {
     if (ctx.gameMode !== 'haunted') return;
     const frozen = Object.freeze({ ...ctx });
     for (const fn of [...this.observers]) {
       try {
-        fn(events, frozen);
+        fn(events, frozen, turn);
       } catch (e) {
         this.log.error('event observer threw', e);
       }
     }
   }
 
-  narratorLines(events: readonly OutputEvent[], ctx: HookContext): string[] {
+  narratorLines(events: readonly OutputEvent[], ctx: HookContext, turn: TurnInfo): string[] {
     if (ctx.gameMode !== 'haunted') return [];
     const frozen = Object.freeze({ ...ctx });
     const result: string[] = [];
     for (const fn of [...this.providers]) {
       try {
-        const out: unknown = fn(events, frozen);
+        const out: unknown = fn(events, frozen, turn);
         if (Array.isArray(out) && out.every((s) => typeof s === 'string')) {
           result.push(...(out as string[]));
         } else {

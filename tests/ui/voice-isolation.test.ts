@@ -517,13 +517,17 @@ describe('src/main.ts and the loaders reach voice and haunt only through import(
     return [...src.matchAll(/\bimport\(\s*['"]([^'"]+)['"]\s*\)/g)].map((m) => m[1]!);
   }
 
-  it('main.ts has no static import of voice or haunt and two dynamic ones', () => {
+  it('main.ts has no static import of voice or haunt and three dynamic ones', () => {
     const src = read('main.ts');
     expect(staticSpecs(src).filter((s) => TARGET.test(s))).toEqual([]);
     const dyn = dynamicSpecs(src);
     expect(dyn).toContain('./voice/browser');
     expect(dyn).toContain('./haunt/spoken-word-rule');
-    expect(dyn.filter((s) => TARGET.test(s)).sort()).toEqual(['./haunt/spoken-word-rule', './voice/browser']);
+    expect(dyn.filter((s) => TARGET.test(s)).sort()).toEqual([
+      './haunt/haunting', // haunting spec task 4.3: narrator, dim, glitch
+      './haunt/spoken-word-rule',
+      './voice/browser',
+    ]);
     expect(src).not.toMatch(/\brequire\(|import\.meta\.glob/);
     // The loader modules are the only static path, and they name no voice or haunt module.
     expect(staticSpecs(src)).toEqual(expect.arrayContaining(['./voice-loader', './game-start-fanout']));

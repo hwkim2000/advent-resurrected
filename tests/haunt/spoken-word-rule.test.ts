@@ -17,13 +17,14 @@ function ctx(
 }
 
 describe('Deflection_Line', () => {
-  it('is the exact 66-character line naming ALOUD, MIC and ALT+M', () => {
-    expect(DEFLECTION_LINE).toBe('SAY IT ALOUD. HOLD THE MIC OR ALT+M. TYPE XYZZY AGAIN IF YOU MUST.');
-    expect(DEFLECTION_LINE).toHaveLength(66);
-    expect(DEFLECTION_LINE.length).toBeLessThanOrEqual(80);
-    expect(DEFLECTION_LINE).toContain('ALOUD');
-    expect(DEFLECTION_LINE).toContain('MIC');
-    expect(DEFLECTION_LINE).toContain('ALT+M');
+  it('is a short ASCII narrator line naming aloud, mic, Alt+M and typing again', () => {
+    expect(DEFLECTION_LINE.length).toBeLessThanOrEqual(160);
+    expect(DEFLECTION_LINE).toMatch(/^[\x20-\x7e]+$/);
+    expect(DEFLECTION_LINE).not.toBe(DEFLECTION_LINE.toUpperCase());
+    expect(DEFLECTION_LINE).toContain('aloud');
+    expect(DEFLECTION_LINE).toContain('mic');
+    expect(DEFLECTION_LINE).toContain('Alt+M');
+    expect(DEFLECTION_LINE).toContain('type it again');
   });
 });
 
