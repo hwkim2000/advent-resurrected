@@ -19,9 +19,18 @@ import { installViewportTracking } from './ui/dom/viewport';
 
 import { createHauntedStartLoader } from './ai-loader';
 import type { AiParserModule } from './ai-loader';
+import { createGameStartFanOut } from './game-start-fanout';
+import { createVoiceStartLoader } from './voice-loader';
+import type { HauntModule, VoiceModule } from './voice-loader';
+import { installMicButton } from './ui/dom/mic-button';
+import type { MicElements } from './ui/dom/mic-button';
 
 /** The only reference to src/parser: a dynamic import, so the chunk is split out. */
 const loadParserModule = (): Promise<AiParserModule> => import('./parser/browser');
+
+/** Dynamic imports only: the voice and haunt layers stay out of the start script. */
+const loadVoiceModule = (): Promise<VoiceModule> => import('./voice/browser');
+const loadHauntModule = (): Promise<HauntModule> => import('./haunt/spoken-word-rule');
 
 function main(): void {
   const els = findTerminalElements();
@@ -56,7 +65,49 @@ function main(): void {
   const log = createLogger();
   const hooks = new ExtensionHooks(log);
   // The AI parser chunk loads only when a Haunted game starts (never in 1976 mode).
-  const onGameStart = createHauntedStartLoader(() => controller, log, loadParserModule);
+  const aiLoader = { onGameStart: createHauntedStartLoader(() => controller, log, loadParserModule) };
+
+  // Mic button: installed at startup in every mode; the voice layer attaches later.
+  const byId = (id: string): HTMLElement | null => document.getElementById(id);
+  const mic = installMicButton({
+    els: {
+      button: byId('mic'),
+      status: byId('voice-status'),
+      disclosure: byId('mic-disclosure'),
+      unavailable: byId('mic-unavailable'),
+      live: byId('voice-live'),
+      input: els.input,
+    } as unknown as MicElements,
+  });
+
+  // The voice chunks load only when a Haunted game starts (never in 1976 mode).
+  const voiceLoader = createVoiceStartLoader({
+    getHost: () => {
+      const c = controller;
+      if (!c) return undefined;
+      return {
+        submit: (line, origin) => c.submit(line, origin),
+        get promptKind() {
+          return c.promptKind;
+        },
+        get phase() {
+          return c.phase;
+        },
+        get gameMode() {
+          return c.gameMode;
+        },
+        log,
+        addInputGate: (gate) => hooks.addInputGate(gate),
+      };
+    },
+    log,
+    loadVoice: loadVoiceModule,
+    loadHaunt: loadHauntModule,
+    onLayer: (layer) => {
+      mic.attach(layer.port);
+    },
+  });
+  const onGameStart = createGameStartFanOut([aiLoader.onGameStart, voiceLoader.onGameStart], log);
   const ctl = new GameController({
     kv,
     clock: createClock(),
@@ -88,6 +139,7 @@ function main(): void {
   let lastPhase = ctl.phase;
   const frame = (now: number): void => {
     ctl.tick(now);
+    voiceLoader.syncHost();
     if (ctl.phase !== lastPhase) {
       lastPhase = ctl.phase;
       const active = document.activeElement;

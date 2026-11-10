@@ -88,7 +88,7 @@ Optional flood guard: add a dashboard rate-limiting rule for `/api/parse` on the
 
 The same text is on the credits page.
 
-`public/_headers` sets a same-origin Content-Security-Policy (`connect-src 'self'`); the AI call goes to this site's own `/api/parse`, so it needs no wider policy. Later specs (microphone) may add a `Permissions-Policy`.
+`public/_headers` sets a same-origin Content-Security-Policy (`connect-src 'self'`); the AI call goes to this site's own `/api/parse`, so it needs no wider policy. The same file sets `Permissions-Policy: microphone=(self)`, so only this site may use the microphone. See "Voice input" below for what `_headers` does and does not cover.
 
 ### Manual checklist (real devices)
 
@@ -97,6 +97,80 @@ The same text is on the credits page.
 - The CRT curvature keeps every character visible on small screens.
 - The visual feel of the effects is right: scanlines, glow, flicker, blinking block cursor, and the CRT toggle and reduced-motion settings.
 - Typing, command history (Up/Down), the boot skip, 1976/Haunted mode switch, and the Credits link all work.
+
+Voice input checks (every item is **not verified** until a person runs it on the named device and records the result in "Findings" below):
+
+- (a) **not verified.** Chrome desktop, Edge desktop, Safari on macOS, Safari on iOS and Chrome on Android each show the voice disclosure next to the mic button, start listening on the first press (mouse) or first tap (touch) with the browser permission prompt appearing at that moment, record a short phrase and submit it. Expected: the phrase appears as an input line and the game answers it.
+- (b) **not verified.** The voice disclosure wraps without horizontal scrolling on a 320 CSS pixel wide viewport. Expected: no horizontal scrollbar, all text readable.
+- (c) **not verified.** Deny the permission prompt once. Expected: the mic button and the voice disclosure hide for the rest of the page session, with no alarming message; typing still works.
+- (d) **not verified.** A browser without the speech recognition API shows no mic button and no voice disclosure. A browser with the API (a Firefox build that ships it, if one is available) shows both, and hides both for the rest of the page session when `start()` fails with `not-allowed`, `service-not-allowed` or `language-not-supported`, or throws. Expected: exactly that.
+- (e) **not verified.** 1976 mode. Expected: no mic button, no voice disclosure and no permission prompt.
+- (f) **not verified.** Chrome, Edge and Safari recognize speech under the deployed Content-Security-Policy and Permissions-Policy. Expected: a spoken phrase is recognized; the first press does not end in a `denied` or `network` error after the prompt was accepted. If it does, record it under "Findings".
+- (g) **not verified.** On touch (Safari on iOS, Chrome on Android): a tap starts recognition on the `click` and a second tap stops it; one tap never starts and stops twice; a long press starts nothing and shows no context menu; a double tap on the button does not zoom the page; the on-screen keyboard stays up. A mouse press-and-hold still works on desktop. Expected: all of these.
+- (h) **not verified.** Type XYZZY. Expected: it is deflected once with the narrator hint; after a page reload the autosaved game is kept; the next typed XYZZY then works.
+- (i) **not verified.** Brave or another Chromium derivative that returns `network`. Expected: the mic button hides after `REPEATED_ERRORS_BEFORE_HIDE` (3) consecutive errors.
+- (j) **not verified.** Note which company processes the audio in each tested browser. Expected: a note per browser; the disclosure text is not changed.
+- (k) **not verified.** Answer the browser permission prompt very slowly (longer than `MAX_LISTEN_MS` plus `RESULT_WAIT_MS`, so the start-confirmation timer fires). Expected: the calm message `VOICE TROUBLE. TYPE INSTEAD.`, no stuck mic button and no stuck `aria-pressed="true"`.
+
+### Findings
+
+Record each finding of a failed or surprising check here: date, check letter, browser and version, device, symptom. If the Content-Security-Policy or Permissions-Policy blocks recognition, the headers are changed together with their tests in a follow-up to the voice-input spec; they ship unchanged until then.
+
+| Date | Check | Browser and version | Device | Result and symptom |
+| ---- | ----- | ------------------- | ------ | ------------------ |
+| (none yet) | | | | |
+
+## Voice input
+
+In Haunted mode a microphone button sits in the input line. Typing always works, whether or not the microphone, the speech API or the AI is available.
+
+### How to use it
+
+- Mouse or pen: press and hold the mic button to talk (push-to-talk) and release to send. A quick tap (shorter than 250 ms) latches listening on; tap again to stop.
+- Keyboard: Alt+M works the same way as the button. Hold it for push-to-talk, tap it to latch, tap again to stop. With the button focused, Enter or Space toggles listening.
+- Touch screens: tap-to-toggle. One tap starts listening, a second tap stops it. A long press does nothing.
+- Listening ends by itself after `MAX_LISTEN_MS` (10 seconds) without a result.
+- 1976 mode never uses the microphone: it shows no mic button and no disclosure.
+
+### Supported browsers
+
+Tested in Chrome, Edge and Safari (see the manual checklist for what has and has not been verified on real devices). The mic button is shown in any browser that exposes the speech recognition API and is hidden in a browser without it. After a denied or unusable start (for example a refused permission prompt) it is hidden for the rest of the page session, and typing carries on.
+
+### The XYZZY rule
+
+In Haunted mode XYZZY has to be spoken aloud. The first time you type XYZZY in a game, the narrator deflects it once with a hint (`DEFLECTION_LIMIT` = 1, once per game) and the game does not take a turn. The next typed XYZZY works normally. Typed XYZZY also always works whenever voice is unusable (unsupported, denied, hidden) and in 1976 mode. The game is completable without a microphone: all 430 points can be reached by typing alone. Spoken PLUGH, PLOVER and FEE FIE FOE FOO, and every other word, are never deflected.
+
+### Voice privacy
+
+The disclosure shown next to the mic button reads, verbatim:
+
+> Speech is processed by your browser's speech service (from the maker of your browser). This game stores no audio.
+
+In plain terms: voice input uses the speech recognition service built into your browser, run by the maker of the browser. Audio is sent to that service for recognition, and which company that is depends on the browser. This site never records or stores audio and never reads the microphone itself, only the text the browser returns. 1976 mode never uses the microphone, and typing always works.
+
+The first press of the mic button starts listening straight away. The browser's own permission prompt is the only consent step; the site shows no extra dialog and keeps no record of consent (no cookie, no storage entry). If a spoken sentence is not a classic command, the text (not audio) goes to the AI parser under the privacy statement above, like a typed sentence.
+
+### Headers
+
+- `public/_headers` sets `Permissions-Policy: microphone=(self)`, so only this site may use the microphone.
+- `_headers` applies to static assets only. It does not apply to the responses of the Functions under `/api`.
+- The Vite dev server does not apply `_headers`, so header problems only show on the deployed site or a Pages preview.
+- The Content-Security-Policy needs no new origin for speech recognition, because the browser, not page script, contacts the speech service.
+
+### Not verified before release
+
+No automated test covers these two points. They are checked only by the manual checklist above (items a and f):
+
+- (a) Whether `Permissions-Policy: microphone` also governs `SpeechRecognition.start()` in each browser.
+- (b) Whether the Content-Security-Policy `connect-src` affects the browser's own connection to the speech service.
+
+### Owner steps for the voice release (manual)
+
+Done by the project owner in their own terminal and browsers; no agent or CI step runs them.
+
+1. `npm run build`, then `npm run check:dist`, then deploy as in "Deploy to Cloudflare Pages" (a Pages preview first is fine).
+2. Fetch the response headers of `/` and of a static asset (for example `curl -I https://<project>.pages.dev/`). Confirm `Permissions-Policy: microphone=(self)`, the unchanged Content-Security-Policy, `X-Content-Type-Options: nosniff` and `Referrer-Policy: no-referrer`, each exactly once. The `/api` responses are not expected to carry them.
+3. Run the voice checklist items (a) to (k) on real devices and record findings in the "Findings" table.
 
 ## Test notes
 

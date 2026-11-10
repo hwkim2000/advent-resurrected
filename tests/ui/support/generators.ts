@@ -3,7 +3,7 @@
 
 import fc from 'fast-check';
 import type { OutputEvent } from '../../../src/engine/index';
-import type { LineKind, Mode, Speed, TranscriptLine } from '../../../src/ui/types';
+import type { InputOrigin, LineKind, Mode, Speed, TranscriptLine } from '../../../src/ui/types';
 import { vocabCommand } from '../../support/generators';
 
 /* ---- text ---- */
@@ -195,3 +195,34 @@ export const arbTickSchedule: fc.Arbitrary<TickStep[]> = fc
       return { at: t, flush: s.flush };
     });
   });
+
+/* ---- input origin (voice-input) ---- */
+
+export const arbOrigin: fc.Arbitrary<InputOrigin> = fc.constantFrom<InputOrigin>('typed', 'spoken');
+
+/** Lines typical of typed input. */
+export const TYPED_LINE_POOL: readonly string[] = [
+  'get lamp', 'enter', 'in', 'west', 'look', 'inventory', 'xyzzy', 'plugh', 'light lamp', 'help',
+  'yes', 'no', 'score', 'go inside the building please',
+];
+
+/** Lines typical of cleaned speech (lower case, no punctuation). */
+export const SPOKEN_LINE_POOL: readonly string[] = [
+  'get lamp', 'enter building', 'i want to go inside', 'xyzzy', 'plugh', 'plover', 'look around',
+  'take the keys', 'yes', 'no', 'fee fie foe foo', 'what is in my pockets',
+];
+
+export const arbTypedLine: fc.Arbitrary<string> = fc.constantFrom(...TYPED_LINE_POOL);
+export const arbSpokenLine: fc.Arbitrary<string> = fc.constantFrom(...SPOKEN_LINE_POOL);
+
+/** A line with its origin; the pool matches the origin. */
+export const arbOriginLine: fc.Arbitrary<{ line: string; origin: InputOrigin }> = fc.oneof(
+  fc.record({ line: arbTypedLine, origin: fc.constant<InputOrigin>('typed') }),
+  fc.record({ line: arbSpokenLine, origin: fc.constant<InputOrigin>('spoken') }),
+);
+
+/** A mixed sequence of typed and spoken lines. */
+export const arbOriginLines: fc.Arbitrary<{ line: string; origin: InputOrigin }[]> = fc.array(
+  arbOriginLine,
+  { maxLength: 30 },
+);

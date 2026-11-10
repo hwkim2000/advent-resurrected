@@ -27,3 +27,12 @@ In Haunted mode, an AI parser turns a natural sentence into a classic command. I
 - Lines that are already classic commands are never sent, so they stay on your device.
 - Nothing else about the player or the game is sent. No account, cookie or identifier is used, and your address is stored only as a salted hash for rate limiting.
 - If the AI is unavailable, the game falls back to the classic two-word parser.
+
+## Voice input and privacy
+
+In Haunted mode you can speak commands. Browsers that support it show a microphone button.
+
+- In Haunted mode, voice input uses the speech recognition service of the maker of the browser. The audio is sent to that service for recognition; which company that is depends on the browser.
+- This site never records or stores audio. A line you speak is stored like a line you type.
+- 1976 mode never uses the microphone.
+- If voice does not work, typing always works.

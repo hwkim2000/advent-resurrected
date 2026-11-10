@@ -3,7 +3,7 @@
 // `src/parser` satisfies `InputResolver` structurally; `src/ui` never imports it.
 
 import type { GameState } from '../engine/index';
-import type { Mode, PromptKind } from './types';
+import type { InputOrigin, Mode, PromptKind } from './types';
 
 export type GamePhase = 'booting' | 'ready' | 'over' | 'failed';
 
@@ -12,6 +12,8 @@ export interface ResolveContext {
   promptKind: PromptKind | undefined;
   phase: GamePhase | undefined;
   state: GameState | undefined;
+  /** Where the line came from; absent means typed. */
+  origin?: InputOrigin;
 }
 
 export type TranslateOutcome =

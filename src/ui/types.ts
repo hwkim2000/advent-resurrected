@@ -7,6 +7,8 @@ import type { OutputEvent } from '../engine/index';
 export type PromptKind = Extract<OutputEvent, { type: 'prompt' }>['kind'];
 
 export type Mode = '1976' | 'haunted';
+/** Where a submitted line came from. */
+export type InputOrigin = 'typed' | 'spoken';
 export type Speed = 20 | 60 | 120 | 300 | 'instant';
 export type LineKind = 'original' | 'input' | 'translation' | 'notice' | 'narrator' | 'boot';
 

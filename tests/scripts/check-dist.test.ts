@@ -1,55 +1,16 @@
 // Tests for scripts/check-dist.ts (ai-parser task 11.3). Uses temporary dist directories only.
 // Credential samples are assembled at run time so this file never matches the repository scan.
 
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { dirname, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 import { checkDist, PRIVACY_STATEMENTS } from '../../scripts/check-dist'
+import { CREDITS_HTML, cleanupDists, makeDist } from './support/make-dist'
 
 const CRED_TOKEN = 'CLOUDFLARE' + '_API_' + 'TOKEN=abc'
 const CRED_ACCOUNT = 'acc' + 'ount_' + 'id: "0000"'
 const CRED_KEY = 's' + 'k-' + 'A1b2C3d4E5f6G7h8I9j0K1'
 const MODEL_ID = '@' + 'cf/meta/some-model'
 
-const PRIVACY_TEXT = Object.values(PRIVACY_STATEMENTS)
-  .map((phrases) => `<p>${phrases.join(' ')}</p>`)
-  .join('\n')
-
-const CREDITS_HTML = `<!doctype html><html><body>
-<p>VT323 under the SIL Open Font License</p>
-${PRIVACY_TEXT}
-</body></html>`
-
-const tmpDirs: string[] = []
-
-interface Overrides {
-  files?: Record<string, string | null> // null deletes a default file
-}
-
-function makeDist(over: Overrides = {}): string {
-  const dir = mkdtempSync(join(tmpdir(), 'check-dist-'))
-  tmpDirs.push(dir)
-  const files: Record<string, string | null> = {
-    'index.html': '<!doctype html><html><body>hello</body></html>',
-    'credits.html': CREDITS_HTML,
-    'fonts/VT323-Regular.woff2': 'font',
-    'fonts/OFL.txt': 'license',
-    '_routes.json': JSON.stringify({ version: 1, include: ['/api/*'], exclude: [] }),
-    ...over.files,
-  }
-  for (const [rel, content] of Object.entries(files)) {
-    if (content === null) continue
-    const full = join(dir, rel)
-    mkdirSync(dirname(full), { recursive: true })
-    writeFileSync(full, content)
-  }
-  return dir
-}
-
-afterEach(() => {
-  for (const d of tmpDirs.splice(0)) rmSync(d, { recursive: true, force: true })
-})
+afterEach(cleanupDists)
 
 describe('check-dist', () => {
   it('passes a clean dist', () => {

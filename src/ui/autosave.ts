@@ -9,17 +9,23 @@ import type { KeyValueStore, LineKind, PromptInfo, TranscriptLine } from './type
 export const AUTOSAVE_MAX_CHARS = 400_000;
 export const AUTOSAVE_MAX_LINES = 200;
 
+/** Most Deflections counted per game (Requirement 13.11). */
+export const DEFLECTION_LIMIT = 1;
+
 export interface AutosaveRecord {
   v: 1;
   state: string;
   prompt: PromptInfo;
   lines: TranscriptLine[];
+  /** Present only when deflections > 0. */
+  ui?: { deflections: number };
 }
 
 export interface Restored {
   state: GameState;
   prompt: PromptInfo;
   lines: TranscriptLine[];
+  deflections: number;
 }
 
 /** Kinds persisted in the autosave tail (never `boot`). */
@@ -74,6 +80,7 @@ export function encodeAutosave(
   prompt: PromptInfo,
   lines: readonly TranscriptLine[],
   maxChars: number = AUTOSAVE_MAX_CHARS,
+  deflections = 0,
 ): string | undefined {
   const stateText = serialize(state);
   let kept = lines
@@ -87,6 +94,7 @@ export function encodeAutosave(
       prompt: { kind: prompt.kind, text: prompt.text },
       lines: ls,
     };
+    if (deflections > 0) rec.ui = { deflections };
     return JSON.stringify(rec);
   };
   let json = build(kept);
@@ -110,10 +118,19 @@ export function decodeAutosave(text: string | null): Restored | undefined {
     const result = deserialize(rec.state);
     if (!result.ok) return undefined;
     if (result.state.session.status !== 'running') return undefined;
+    let deflections = 0;
+    const ui = rec.ui;
+    if (isObject(ui)) {
+      const d = ui.deflections;
+      if (typeof d === 'number' && Number.isInteger(d) && d >= 0 && d <= DEFLECTION_LIMIT) {
+        deflections = d;
+      }
+    }
     return {
       state: result.state,
       prompt: { kind: rec.prompt.kind, text: rec.prompt.text },
       lines: rec.lines.map((l) => ({ kind: l.kind, text: l.text, eol: l.eol })),
+      deflections,
     };
   } catch {
     return undefined;
@@ -152,8 +169,9 @@ export function storeAutosave(
   prompt: PromptInfo,
   lines: readonly TranscriptLine[],
   maxChars: number = AUTOSAVE_MAX_CHARS,
+  deflections = 0,
 ): void {
-  const json = encodeAutosave(state, prompt, lines, maxChars);
+  const json = encodeAutosave(state, prompt, lines, maxChars, deflections);
   if (json === undefined) return;
   try {
     kv.set(AUTOSAVE_KEY, json);

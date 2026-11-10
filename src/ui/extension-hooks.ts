@@ -2,7 +2,7 @@
 // Pure: no browser globals. Gated on Game_Mode inside the registry itself.
 
 import type { OutputEvent } from '../engine/index';
-import type { LineKind, Logger, Mode, PromptKind } from './types';
+import type { InputOrigin, LineKind, Logger, Mode, PromptKind } from './types';
 
 export interface HookContext {
   readonly gameMode: Mode;
@@ -23,7 +23,40 @@ export type NarratorLineProvider = (
 ) => readonly string[];
 export type OutputListener = (block: OutputBlock, ctx: HookContext) => void;
 
+export type GateResult =
+  | { readonly kind: 'allow' }
+  | { readonly kind: 'deflect'; readonly lines: readonly string[] }; // 1 to 3 non-empty strings
+
+export type InputGate = (
+  text: string,
+  origin: InputOrigin,
+  deflections: number,
+  ctx: HookContext,
+) => GateResult;
+
+const ALLOW: GateResult = Object.freeze({ kind: 'allow' });
+
+/** Returns a fresh frozen deflect copy if `out` is a valid deflect, else undefined. */
+function validDeflect(out: unknown): GateResult | undefined {
+  if (typeof out !== 'object' || out === null) return undefined;
+  const r = out as { kind?: unknown; lines?: unknown };
+  if (r.kind !== 'deflect' || !Array.isArray(r.lines)) return undefined;
+  const lines: unknown[] = r.lines;
+  if (lines.length < 1 || lines.length > 3) return undefined;
+  if (!lines.every((s) => typeof s === 'string' && s.length > 0)) return undefined;
+  return Object.freeze({
+    kind: 'deflect' as const,
+    lines: Object.freeze([...(lines as string[])]),
+  });
+}
+
+function isAllow(out: unknown): boolean {
+  return typeof out === 'object' && out !== null && (out as { kind?: unknown }).kind === 'allow';
+}
+
 export class ExtensionHooks {
+  private readonly gates: { readonly fn: InputGate }[] = [];
+
   private readonly transformers: InputTransformer[] = [];
   private readonly observers: EventObserver[] = [];
   private readonly providers: NarratorLineProvider[] = [];
@@ -45,6 +78,36 @@ export class ExtensionHooks {
 
   addOutputListener(fn: OutputListener): () => void {
     return this.add(this.listeners, fn);
+  }
+
+  addInputGate(fn: InputGate): () => void {
+    const entry = { fn };
+    this.gates.push(entry);
+    return () => {
+      const i = this.gates.indexOf(entry);
+      if (i >= 0) this.gates.splice(i, 1);
+    };
+  }
+
+  gateInput(
+    text: string,
+    origin: InputOrigin,
+    deflections: number,
+    ctx: HookContext,
+  ): GateResult {
+    if (ctx.gameMode !== 'haunted') return ALLOW;
+    const frozen = Object.freeze({ ...ctx });
+    for (const entry of [...this.gates]) {
+      try {
+        const out: unknown = entry.fn(text, origin, deflections, frozen);
+        const deflect = validDeflect(out);
+        if (deflect) return deflect;
+        if (!isAllow(out)) this.log.error('input gate returned an invalid value', out);
+      } catch (e) {
+        this.log.error('input gate threw', e);
+      }
+    }
+    return ALLOW;
   }
 
   transformInput(line: string, ctx: HookContext): string {

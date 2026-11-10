@@ -33,7 +33,14 @@
             <span class="cursor" id="cursor" aria-hidden="true"></span>
           </div>
         </div>
+        <div id="voice-bar" class="voice-bar">
+          <button id="mic" class="mic" type="button" hidden aria-pressed="false" aria-keyshortcuts="Alt+M" aria-label="Mic: hold to talk" aria-describedby="mic-disclosure">MIC</button>
+          <p id="voice-status" class="voice-status" aria-hidden="true" hidden></p>
+          <p id="mic-disclosure" class="voice-disclosure" hidden>Speech is processed by your browser's speech service (from the maker of your browser). This game stores no audio.</p>
+          <span id="mic-unavailable" hidden>Voice input is not available for this question</span>
+        </div>
         <div id="live" class="sr-only" aria-live="polite" aria-atomic="false"></div>
+        <div id="voice-live" class="sr-only" aria-live="polite" aria-atomic="true"></div>
         <div id="live-interpreted" class="sr-only" aria-live="polite" aria-atomic="true"></div>
         <noscript>
           <p class="line line--notice">THIS PROGRAM NEEDS JAVASCRIPT TO RESURRECT.</p>

@@ -8,6 +8,7 @@ import type { Env, GameState, OutputEvent } from '../engine/index';
 import {
   AUTOSAVE_LINE_KINDS,
   AUTOSAVE_MAX_LINES,
+  DEFLECTION_LIMIT,
   clearAutosave,
   loadAutosave,
   storeAutosave,
@@ -32,12 +33,14 @@ import { Teletype } from './teletype';
 import { MAX_TRANSCRIPT_LINES, Transcript } from './transcript';
 import type {
   Clock,
+  InputOrigin,
   KeyValueStore,
   LineKind,
   Logger,
   Mode,
   MotionPreference,
   PromptInfo,
+  PromptKind,
   Speed,
   TerminalPort,
 } from './types';
@@ -78,10 +81,16 @@ export const RESOLUTION_WATCHDOG_MS = 10_000;
 interface Resolution {
   token: number;
   line: string;
+  origin: InputOrigin;
   stateAtStart: GameState;
   abort: AbortController;
   startedAtTick: number | undefined;
   pendingShown: boolean;
+}
+
+interface QueueEntry {
+  readonly line: string;
+  readonly origin: InputOrigin;
 }
 
 const MAX_LINE_CHARS = 1023;
@@ -98,7 +107,8 @@ export class GameController {
   private state: GameState | undefined;
   private prompt: PromptInfo = DEFAULT_PROMPT;
   private phaseValue: Phase = 'booting';
-  private readonly queue: string[] = [];
+  private readonly queue: QueueEntry[] = [];
+  private deflections = 0;
   private working = false;
   private bootStarted = false;
   private bootQueued = false;
@@ -173,6 +183,12 @@ export class GameController {
     return this.state.session.settings.oldstyle ? '1976' : 'haunted';
   }
 
+  /** Kind of the current prompt; undefined when no game is running. */
+  get promptKind(): PromptKind | undefined {
+    if (this.state === undefined) return undefined;
+    return this.prompt.kind;
+  }
+
   /** Read-only snapshot for tests and later specs. */
   get engineState(): GameState | undefined {
     return this.state;
@@ -234,7 +250,7 @@ export class GameController {
         if (this.resolving !== r) return;
         this.finishResolution(r);
         r.abort.abort();
-        this.deliver(r.line, r.line);
+        this.deliver(r.line, r.line, r.origin);
       });
       return;
     }
@@ -245,9 +261,10 @@ export class GameController {
   }
 
   /** One submitted line; queued while the boot or earlier output is pending. */
-  submit(raw: string): void {
+  submit(raw: string, origin: InputOrigin = 'typed'): void {
     if (this.phaseValue === 'failed') return;
     const line = raw.length > MAX_LINE_CHARS ? raw.slice(0, MAX_LINE_CHARS) : raw;
+    const kind: InputOrigin = origin === 'spoken' ? 'spoken' : 'typed';
     if (
       this.working ||
       this.resolving !== undefined ||
@@ -255,10 +272,10 @@ export class GameController {
       this.teletype.busy ||
       this.queue.length > 0
     ) {
-      this.queue.push(line);
+      this.queue.push({ line, origin: kind });
       return;
     }
-    this.run(() => this.processLine(line));
+    this.run(() => this.processLine(line, kind));
   }
 
   requestNewGame(): void {
@@ -331,9 +348,9 @@ export class GameController {
         this.queue.length = 0;
         break;
       }
-      const line = this.queue.shift();
-      if (line === undefined) break;
-      this.exec(() => this.processLine(line));
+      const entry = this.queue.shift();
+      if (entry === undefined) break;
+      this.exec(() => this.processLine(entry.line, entry.origin));
     }
     this.syncBusy();
   }
@@ -363,6 +380,7 @@ export class GameController {
       this.transcript.append(restored.lines);
       this.deps.view.appendInstant(restored.lines);
       this.deps.view.trimTo(MAX_TRANSCRIPT_LINES);
+      this.deflections = restored.deflections;
       this.setPhase('ready');
       this.notice(NOTICE_RESUMING);
       this.deps.view.setPrompt(this.prompt);
@@ -388,6 +406,7 @@ export class GameController {
   }
 
   private newGameStart(): void {
+    this.deflections = 0;
     const seed = this.deps.clock.now() | 0;
     try {
       const fresh = newGame(seed, { oldstyle: this.current.mode === '1976' });
@@ -431,8 +450,21 @@ export class GameController {
     }
   }
 
-  private processLine(line: string): void {
-    this.hist = pushLine(this.hist, line);
+  private processLine(line: string, origin: InputOrigin): void {
+    const prev = this.hist;
+    const pushed = pushLine(prev, line);
+    if (origin === 'spoken') {
+      // Spoken lines enter the history but leave the browsing position and draft alone.
+      const stored = pushed.entries !== prev.entries;
+      const dropped = Math.max(0, prev.entries.length + (stored ? 1 : 0) - pushed.entries.length);
+      this.hist = {
+        entries: pushed.entries,
+        pos: prev.pos === null ? null : Math.max(0, prev.pos - dropped),
+        draft: prev.draft,
+      };
+    } else {
+      this.hist = pushed;
+    }
     this.persistHistory();
 
     if (this.phaseValue === 'over') {
@@ -452,18 +484,18 @@ export class GameController {
 
     const resolver = this.resolver;
     if (resolver !== undefined) {
-      const ctx = this.resolveContext();
+      const ctx = this.resolveContext(origin);
       if (
         ctx.gameMode === 'haunted' &&
         ctx.promptKind === 'command' &&
         ctx.phase === 'ready' &&
         this.guarded(() => resolver.needsTranslation(line, ctx), false)
       ) {
-        this.beginResolution(resolver, line, before, ctx);
+        this.beginResolution(resolver, line, before, ctx, origin);
         return;
       }
     }
-    this.deliver(line, line);
+    this.deliver(line, line, origin);
   }
 
   private guarded<T>(fn: () => T, fallback: T): T {
@@ -475,8 +507,9 @@ export class GameController {
     }
   }
 
-  private resolveContext(): ResolveContext {
+  private resolveContext(origin: InputOrigin): ResolveContext {
     return {
+      origin,
       gameMode: this.gameMode,
       promptKind: this.prompt.kind,
       phase: this.phaseValue,
@@ -489,10 +522,12 @@ export class GameController {
     line: string,
     stateAtStart: GameState,
     ctx: ResolveContext,
+    origin: InputOrigin,
   ): void {
     const r: Resolution = {
       token: ++this.nextToken,
       line,
+      origin,
       stateAtStart,
       abort: new AbortController(),
       startedAtTick: undefined,
@@ -524,16 +559,16 @@ export class GameController {
       this.finishResolution(r);
       if (this.phaseValue === 'failed') return;
       if (this.prompt.kind !== 'command' || this.state !== r.stateAtStart) {
-        this.deliver(r.line, r.line);
+        this.deliver(r.line, r.line, r.origin);
         return;
       }
       if (outcome.kind === 'translated') {
         this.emit('translation', outcome.command + '\n');
-        this.deliver(r.line, outcome.command);
+        this.deliver(r.line, outcome.command, r.origin);
         return;
       }
       if (outcome.notice) this.notice(NOTICE_AI_OFFLINE);
-      this.deliver(r.line, r.line);
+      this.deliver(r.line, r.line, r.origin);
     });
   }
 
@@ -544,16 +579,21 @@ export class GameController {
     this.run(() => {
       this.finishResolution(r);
       if (this.phaseValue === 'failed') return;
-      this.deliver(r.line, r.line);
+      this.deliver(r.line, r.line, r.origin);
     });
   }
 
   /** Gives `text` to the engine for the already echoed `line`. */
-  private deliver(_line: string, text: string): void {
+  private deliver(_line: string, text: string, origin: InputOrigin): void {
     const before = this.state;
     if (before === undefined) return;
     const wasCommand = this.prompt.kind === 'command';
     const transformed = this.deps.hooks.transformInput(text, this.ctx());
+    const gate = this.deps.hooks.gateInput(transformed, origin, this.deflections, this.ctx());
+    if (gate.kind === 'deflect') {
+      this.applyDeflection(gate.lines);
+      return;
+    }
     let result;
     try {
       result = step(before, transformed, this.env);
@@ -599,8 +639,28 @@ export class GameController {
     if (over) {
       clearAutosave(this.kv);
     } else {
-      storeAutosave(this.kv, state, this.prompt, this.transcript.tail(AUTOSAVE_MAX_LINES, AUTOSAVE_LINE_KINDS));
+      this.persistAutosave();
     }
+  }
+
+  private persistAutosave(): void {
+    const state = this.state;
+    if (state === undefined) return;
+    storeAutosave(
+      this.kv,
+      state,
+      this.prompt,
+      this.transcript.tail(AUTOSAVE_MAX_LINES, AUTOSAVE_LINE_KINDS),
+      undefined,
+      this.deflections,
+    );
+  }
+
+  /** A gate refused the line: narrate it, count it, keep the engine untouched. */
+  private applyDeflection(lines: readonly string[]): void {
+    this.deflections = Math.min(DEFLECTION_LIMIT, this.deflections + 1);
+    for (const line of lines) this.emit('narrator', line + '\n');
+    this.persistAutosave();
   }
 
   private overNotice(): string {

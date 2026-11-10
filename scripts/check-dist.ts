@@ -7,7 +7,10 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, extname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { Window } from 'happy-dom'
+import { VOICE_DISCLOSURE_TEXT } from '../src/shared/voice-disclosure'
 import { findCredentials } from './credential-patterns'
+import { checkHeadersPolicy } from './headers-policy'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 
@@ -24,6 +27,9 @@ export const PRIVACY_STATEMENTS: Readonly<Record<string, readonly string[]>> = {
   b: ['1976 mode sends no player input'],
   c: ['classic commands', 'never sent'],
   d: ['nothing else about the player or the game is sent'],
+  e: ['voice input', 'speech recognition service', 'maker of the browser', 'never records or stores audio'],
+  f: ['1976 mode never uses the microphone'],
+  g: ['typing always works'],
 }
 
 function isFile(path: string): boolean {
@@ -69,6 +75,75 @@ function visibleText(bundle: string): string {
     .toLowerCase()
 }
 
+/** Voice-input checks on index.html, _headers and the assets (R14.10, R15, R16.4 to 16.7, R16.10). */
+function checkVoice(distDir: string, errors: string[]): void {
+  const collapse = (s: string): string => s.replace(/\s+/g, ' ').trim()
+
+  // _headers: must exist and pass the policy (failure messages never echo header values).
+  const headersPath = join(distDir, '_headers')
+  if (!isFile(headersPath)) {
+    errors.push('missing file: dist/_headers')
+  } else {
+    for (const f of checkHeadersPolicy(readFileSync(headersPath, 'utf8'))) {
+      errors.push(`dist/_headers: ${f}`)
+    }
+  }
+
+  const indexPath = join(distDir, 'index.html')
+  if (!isFile(indexPath)) return // already reported as missing
+  const html = readFileSync(indexPath, 'utf8')
+
+  const win = new Window()
+  try {
+    const doc = new win.DOMParser().parseFromString(html, 'text/html')
+
+    const nodes = doc.querySelectorAll('#mic-disclosure')
+    if (nodes.length !== 1) {
+      errors.push(`dist/index.html: expected exactly one #mic-disclosure element, found ${nodes.length}`)
+    } else {
+      const el = nodes[0]
+      if (el !== undefined) {
+        if (!el.hasAttribute('hidden')) {
+          errors.push('dist/index.html: #mic-disclosure must have the hidden attribute')
+        }
+        if (collapse(el.textContent ?? '') !== collapse(VOICE_DISCLOSURE_TEXT)) {
+          errors.push('dist/index.html: #mic-disclosure text does not equal VOICE_DISCLOSURE_TEXT')
+        }
+      }
+    }
+
+    // Start-time scripts (script src, modulepreload) must not contain SpeechRecognition.
+    const startRefs = new Set<string>()
+    for (const s of Array.from(doc.querySelectorAll('script[src]'))) {
+      startRefs.add(s.getAttribute('src') ?? '')
+    }
+    for (const l of Array.from(doc.querySelectorAll('link[rel~="modulepreload"][href]'))) {
+      startRefs.add(l.getAttribute('href') ?? '')
+    }
+    for (const raw of startRefs) {
+      if (/^[a-z][a-z0-9+.-]*:/i.test(raw) || raw.startsWith('//')) continue
+      const rel = (raw.split(/[?#]/)[0] ?? '').replace(/^\/+/, '')
+      if (rel === '') continue
+      const target = join(distDir, rel)
+      // A missing file is reported by the page check.
+      if (isFile(target) && readFileSync(target, 'utf8').includes('SpeechRecognition')) {
+        errors.push(`dist/${rel}: loaded at start but contains SpeechRecognition (voice code must load lazily)`)
+      }
+    }
+  } finally {
+    void win.happyDOM.close()
+  }
+
+  // At least one lazily loaded chunk under dist/assets must contain SpeechRecognition.
+  const assets = join(distDir, 'assets')
+  let found = false
+  if (existsSync(assets)) {
+    found = listTextFiles(assets).some(
+      (f) => f.endsWith('.js') && readFileSync(f, 'utf8').includes('SpeechRecognition'),
+    )
+  }
+  if (!found) errors.push('no .js file under dist/assets contains SpeechRecognition (voice chunk missing)')
+}
 /** Runs every check against `distDir`; returns the list of failures (empty when OK). */
 export function checkDist(distDir: string): string[] {
   const errors: string[] = []
@@ -137,6 +212,8 @@ export function checkDist(distDir: string): string[] {
       errors.push('dist/_routes.json: not valid JSON')
     }
   }
+
+  checkVoice(distDir, errors)
 
   // Credential scan over every text file; patterns are reported, never the matched text.
   for (const file of listTextFiles(distDir)) {

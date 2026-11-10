@@ -160,8 +160,6 @@ function isInside(target: string, dir: string): boolean {
 }
 
 const PARSER_DIR = join(SRC, "parser");
-/** Layers that src/ui and src/main.ts must not statically import (ai-parser spec, task 2.4). */
-const LAYER_FORBIDDEN = ["haunt", "parser", "voice", "shared", "parse-api"].map((d) => join(SRC, d));
 
 /** Import references with their kind: dynamic `import("x")` versus every static form. */
 function importRefs(withStrings: string): Array<{ spec: string; dynamic: boolean }> {
@@ -189,6 +187,41 @@ function staticParserImports(file: string, text: string): string[] {
     if (target !== undefined && isInside(target, PARSER_DIR)) bad.push(`${rel(file)} -> ${spec}`);
   }
   return bad;
+}
+
+const VOICE_DIR = join(SRC, "voice");
+const HAUNT_DIR = join(SRC, "haunt");
+const SHARED_DIR = join(SRC, "shared");
+const PARSE_API_DIR = join(SRC, "parse-api");
+
+/** Layers src/ui must never reference, in any import form (voice-input spec, task 2.2). */
+const UI_FORBIDDEN_ANY = [VOICE_DIR, HAUNT_DIR, PARSER_DIR, SHARED_DIR, PARSE_API_DIR];
+/** Layers src/main.ts may reach only through dynamic import(). */
+const MAIN_DYNAMIC_ONLY = [VOICE_DIR, HAUNT_DIR, PARSER_DIR];
+/** Layers src/main.ts must not import in any form. */
+const MAIN_FORBIDDEN_ANY = [SHARED_DIR, PARSE_API_DIR];
+
+function layerViolations(file: string, text: string, dirs: string[], dynamicAllowed: boolean): string[] {
+  const bad: string[] = [];
+  for (const { spec, dynamic } of importRefs(strip(text).withStrings)) {
+    if (dynamic && dynamicAllowed) continue;
+    const target = resolveSpec(file, spec);
+    if (target !== undefined && dirs.some((d) => isInside(target, d))) bad.push(`${rel(file)} -> ${spec}`);
+  }
+  return bad;
+}
+
+/** Rule 1: src/ui file text referencing a forbidden layer in any form. */
+function uiLayerViolations(file: string, text: string): string[] {
+  return layerViolations(file, text, UI_FORBIDDEN_ANY, false);
+}
+
+/** Rule 2: main.ts text with static voice/haunt/parser imports, or any shared/parse-api import. */
+function mainLayerViolations(file: string, text: string): string[] {
+  return [
+    ...layerViolations(file, text, MAIN_DYNAMIC_ONLY, true),
+    ...layerViolations(file, text, MAIN_FORBIDDEN_ANY, false),
+  ];
 }
 
 const UI_FILES = [...tsFiles(UI_DIR, true), ...(existsSync(MAIN_TS) ? [MAIN_TS] : [])];
@@ -219,17 +252,16 @@ describe("ui layering: imports", () => {
     expect(bad, `deep engine imports:\n  ${bad.join("\n  ")}`).toEqual([]);
   });
 
-  it("src/ui and src/main.ts import nothing from src/haunt, src/voice, src/shared or src/parse-api", () => {
+  it("src/ui imports nothing from src/voice, src/haunt, src/parser, src/shared or src/parse-api (static, type or dynamic)", () => {
     const bad: string[] = [];
-    const forbidden = LAYER_FORBIDDEN.filter((d) => d !== PARSER_DIR);
-    for (const f of UI_FILES) {
-      for (const spec of importSpecifiers(strip(read(f)).withStrings)) {
-        const target = resolveSpec(f, spec);
-        if (target === undefined) continue;
-        if (forbidden.some((d) => isInside(target, d))) bad.push(`${rel(f)} -> ${spec}`);
-      }
-    }
-    expect(bad, `forbidden layer imports:\n  ${bad.join("\n  ")}`).toEqual([]);
+    for (const f of tsFiles(UI_DIR, true)) bad.push(...uiLayerViolations(f, read(f)));
+    expect(bad, `forbidden layer imports in src/ui:\n  ${bad.join("\n  ")}`).toEqual([]);
+  });
+
+  it("src/main.ts has no static import of src/voice, src/haunt or src/parser and imports src/shared and src/parse-api in no form", () => {
+    expect(existsSync(MAIN_TS)).toBe(true);
+    const bad = mainLayerViolations(MAIN_TS, read(MAIN_TS));
+    expect(bad, `forbidden layer imports in main.ts:\n  ${bad.join("\n  ")}`).toEqual([]);
   });
 
   it("src/ui has no reference to src/parser, static or dynamic", () => {
@@ -358,6 +390,25 @@ describe("ui layering: rule self-checks", () => {
     const refs = importRefs(strip('await import("../parser/ai-parser");').withStrings);
     expect(refs).toEqual([{ spec: "../parser/ai-parser", dynamic: true }]);
     expect(isInside(resolveSpec(uiFile, refs[0]!.spec)!, PARSER_DIR)).toBe(true);
+  });
+
+  it("planted fixture: dynamic import of src/voice fails in a src/ui file but passes in main.ts", () => {
+    const dynamicVoice = 'const m = await import("../voice/browser");\nexport const x = m;\n';
+    const mainDynamicVoice = 'const m = await import("./voice/browser");\nexport const x = m;\n';
+    const uiFile = join(UI_DIR, "x.ts");
+    const uiDomFile = join(UI_DIR, "dom", "x.ts");
+    expect(uiLayerViolations(uiFile, dynamicVoice)).toHaveLength(1);
+    expect(uiLayerViolations(uiDomFile, 'await import("../../haunt/x");')).toHaveLength(1);
+    expect(uiLayerViolations(uiFile, 'import type { A } from "../voice/browser";')).toHaveLength(1);
+    expect(uiLayerViolations(uiFile, 'import { A } from "../shared/limits";')).toHaveLength(1);
+    expect(mainLayerViolations(MAIN_TS, mainDynamicVoice)).toEqual([]);
+    expect(mainLayerViolations(MAIN_TS, 'await import("./haunt/x");')).toEqual([]);
+    // Static and type-only imports in main.ts still fail.
+    expect(mainLayerViolations(MAIN_TS, 'import { A } from "./voice/browser";')).toHaveLength(1);
+    expect(mainLayerViolations(MAIN_TS, 'import type { A } from "./haunt/x";')).toHaveLength(1);
+    // shared and parse-api are forbidden in main.ts even dynamically.
+    expect(mainLayerViolations(MAIN_TS, 'await import("./shared/limits");')).toHaveLength(1);
+    expect(mainLayerViolations(MAIN_TS, 'import { A } from "./parse-api/x";')).toHaveLength(1);
   });
 
   it("resolves deep engine specifiers", () => {
