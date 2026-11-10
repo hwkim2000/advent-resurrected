@@ -4,9 +4,10 @@
  */
 import type { GameState } from '../engine';
 import { isClassicCommandText } from '../shared/command-validation';
-import { isGhostPhrase, isGhostPrefixAsk } from '../shared/ghost-ask';
+import { isGhostOfflineAsk } from '../shared/ghost-ask';
 import { TEXT_MAX_CHARS } from '../shared/limits';
 import { hasControlChars, hasLoneSurrogate, normalizePlayerText } from '../shared/normalize';
+import { offlineCommand } from '../shared/offline-commands';
 
 export interface ResolveInput {
   gameMode: 'haunted' | '1976' | undefined;
@@ -18,6 +19,7 @@ export interface ResolveInput {
 export type Eligibility =
   | { kind: 'pass' } // give the line to the engine unchanged, no request
   | { kind: 'fallback-no-request' } // over 200 characters or unsafe text
+  | { kind: 'local'; command: string } // mapped on the client, no request
   | { kind: 'ask'; text: string }; // normalized text to send
 
 /** Empty, whitespace-only, or digits with an optional sign (numeric answers). */
@@ -40,12 +42,16 @@ export function classifyInput(line: string, input: ResolveInput): Eligibility {
 
   if (NUMERIC_OR_BLANK.test(line)) return { kind: 'pass' };
 
-  // Ghost asks are answered client-side by the hint gate: no request.
-  if (isGhostPrefixAsk(line) || isGhostPhrase(line)) return { kind: 'pass' };
+  // Ghost asks (prefix, exact phrases, broad stuck/hint questions) are answered client-side
+  // by the hint gate: no request. Plain HELP and INFO are not matched and stay classic.
+  if (isGhostOfflineAsk(line)) return { kind: 'pass' };
 
   if (isClassicCommandText(line, state.game.zzword, state.session.settings.oldstyle)) {
     return { kind: 'pass' };
   }
+
+  const local = offlineCommand(line);
+  if (local !== undefined) return { kind: 'local', command: local };
 
   const text = normalizePlayerText(line);
   if (text.length === 0) return { kind: 'pass' };

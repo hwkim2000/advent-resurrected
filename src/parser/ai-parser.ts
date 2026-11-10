@@ -118,6 +118,7 @@ export class AiParser {
 
   private async run(line: string, input: ResolveInput, signal: AbortSignal): Promise<TranslateOutcome> {
     const eligibility = classifyInput(line, input);
+    if (eligibility.kind === 'local') return { kind: 'translated', command: eligibility.command };
     if (eligibility.kind !== 'ask') return this.fallback(false);
     if (signal.aborted) return this.fallback(false);
     if (this.inFlight) return this.fallback(false);

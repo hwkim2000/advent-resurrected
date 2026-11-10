@@ -6,7 +6,7 @@ import { validateCommand } from '../../src/shared/command-validation'
 import { validateContext } from '../../src/shared/context-rules'
 import { decodeRequest, encodeRequest } from '../../src/shared/protocol'
 import { evalCases } from '../../scripts/eval-parser-cases'
-import { classify, formatRow, judge, totals, PACING_MS, type Row } from '../../scripts/eval-parser'
+import { classify, formatRow, judge, localOutcome, totals, PACING_MS, EQUIVALENT_COMMANDS, type Row } from '../../scripts/eval-parser'
 
 const cases = evalCases()
 const of = (g: string) => cases.filter((c) => c.group === g)
@@ -93,5 +93,42 @@ describe('scoring', () => {
 
   it('paces requests under 30 per minute', () => {
     expect(60_000 / PACING_MS).toBeLessThan(30)
+  })
+})
+
+describe('equivalent originals and the client matcher first', () => {
+  it('accepts equivalent originals as passes', () => {
+    const ok = (expected: string, got: string) => judge(('command:' + expected) as `command:${string}`, { status: 200, command: got })
+    expect(ok('ENTER BUILD', 'ENTER')).toBe(true)
+    expect(ok('OUT', 'EXIT')).toBe(true)
+    expect(ok('UP', 'CLIMB')).toBe(true)
+    expect(ok('OPEN GRATE', 'UNLOC GRATE')).toBe(true)
+    expect(ok('ENTER BUILD', 'ENTER BUILD')).toBe(true)
+  })
+
+  it('does not accept unrelated or reversed answers', () => {
+    expect(judge('command:ENTER BUILD', { status: 200, command: 'LOOK' })).toBe(false)
+    expect(judge('command:ENTER', { status: 200, command: 'ENTER BUILD' })).toBe(false)
+    expect(judge('command:UP', { status: 200, command: 'DOWN' })).toBe(false)
+    expect(judge('command:OUT', { status: 200, command: 'GHOST' })).toBe(false)
+    expect(Object.keys(EQUIVALENT_COMMANDS).sort()).toEqual(['ENTER BUILD', 'OPEN GRATE', 'OUT', 'UP'])
+  })
+
+  it('every ask sentence is answered by the client matcher (GHOST, no request)', () => {
+    for (const c of of('ask')) expect(localOutcome(c.text)).toEqual({ status: 200, command: 'GHOST' })
+  })
+
+  it('switch off the lamp is mapped locally and judged against the case', () => {
+    const c = cases.find((x) => x.text === 'switch off the lamp')!
+    const o = localOutcome(c.text)
+    expect(o).toEqual({ status: 200, command: 'EXTIN LAMP' })
+    expect(judge(c.expect, o!)).toBe(true)
+  })
+
+  it('negatives and ordinary commands still go to the AI', () => {
+    for (const c of of('negative')) expect(localOutcome(c.text)).toBeUndefined()
+    for (const t of ['pick up the lamp', 'HELP', 'INFO']) expect(localOutcome(t)?.command).not.toBe('EXTIN LAMP')
+    expect(localOutcome('HELP')).toBeUndefined()
+    expect(localOutcome('INFO')).toBeUndefined()
   })
 })

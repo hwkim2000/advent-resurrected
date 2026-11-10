@@ -59,14 +59,14 @@ describe('AiParser', () => {
   describe('GHOST sentinel', () => {
     it.each(['GHOST', 'ghost', ' Ghost '])('maps a decoded %j answer to translated GHOST', async (answer) => {
       const { parser, ctx } = setup([{ kind: 'respond', status: 200, body: JSON.stringify({ command: answer }) }]);
-      const out = await parser.translate('I am hopelessly confused', ctx, new AbortController().signal);
+      const out = await parser.translate('tell me a story', ctx, new AbortController().signal);
       expect(out).toEqual({ kind: 'translated', command: 'GHOST' });
     });
 
     it('rejects other invalid outputs and keeps the sentinel strict', async () => {
       for (const command of ['GHOSTS', 'GHOST LAMP', 'NOCOMMAND', 'QUIT', '']) {
         const { parser, ctx } = setup([{ kind: 'respond', status: 200, body: JSON.stringify({ command }) }]);
-        const out = await parser.translate('I am hopelessly confused', ctx, new AbortController().signal);
+        const out = await parser.translate('tell me a story', ctx, new AbortController().signal);
         expect(out).toEqual({ kind: 'fallback', notice: true });
       }
     });
@@ -81,6 +81,29 @@ describe('AiParser', () => {
       expect(fake.calls).toHaveLength(0);
       expect(parser.needsTranslation('please wander about', ctx)).toBe(true);
     });
+
+    it('answers broad stuck/hint questions offline, with no request (plain HELP and INFO still classic)', async () => {
+      const { fake, parser, ctx } = setup([{ kind: 'respond', status: 200, body: '{\"command\":\"LOOK\"}' }]);
+      const s = new AbortController().signal;
+      for (const line of ['I am stuck, what now?', 'I have no idea what to do', 'any advice for a beginner?', 'where am I supposed to go from here']) {
+        expect(parser.needsTranslation(line, ctx)).toBe(false);
+      }
+      expect(await parser.translate('I have no idea what to do', ctx, s)).toEqual({ kind: 'fallback', notice: false });
+      expect(parser.needsTranslation('HELP', ctx)).toBe(false);
+      expect(parser.needsTranslation('INFO', ctx)).toBe(false);
+      expect(fake.calls).toHaveLength(0);
+    });
+
+    it('maps switch off / turn off the lamp to EXTIN LAMP locally, without a request', async () => {
+      const { fake, parser, ctx } = setup([{ kind: 'respond', status: 200, body: '{\"command\":\"LIGHT OFF\"}' }]);
+      const s = new AbortController().signal;
+      for (const line of ['switch off the lamp', 'turn off the lamp', 'Turn the light off please']) {
+        expect(parser.needsTranslation(line, ctx)).toBe(true);
+        expect(await parser.translate(line, ctx, s)).toEqual({ kind: 'translated', command: 'EXTIN LAMP' });
+      }
+      expect(fake.calls).toHaveLength(0);
+    });
+
 
     it('CommandMemory ignores GHOST (not a valid command)', () => {
       const m = new CommandMemory();

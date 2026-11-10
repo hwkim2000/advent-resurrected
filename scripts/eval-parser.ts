@@ -7,6 +7,8 @@
 // a server; classify() and judge() are pure and unit-tested offline.
 
 import { pathToFileURL } from 'node:url'
+import { isGhostOfflineAsk } from '../src/shared/ghost-ask'
+import { offlineCommand } from '../src/shared/offline-commands'
 import { encodeRequest } from '../src/shared/protocol'
 import { evalCases, type EvalCase, type Expectation } from './eval-parser-cases'
 
@@ -32,12 +34,38 @@ export function classify(o: Outcome): string {
   return `error:${o.error ?? String(o.status)}`
 }
 
+/**
+ * Originals that mean the same thing for the game: an expected command also passes when the
+ * answer is one of these equivalents (e.g. ENTER for ENTER BUILD).
+ */
+export const EQUIVALENT_COMMANDS: Readonly<Record<string, readonly string[]>> = {
+  'ENTER BUILD': ['ENTER'],
+  OUT: ['EXIT'],
+  UP: ['CLIMB'],
+  'OPEN GRATE': ['UNLOC GRATE'],
+}
+
 /** True when the outcome satisfies the expectation. Errors and network failures never pass. */
 export function judge(expect: Expectation, o: Outcome): boolean {
   const label = classify(o)
   if (label === 'network' || label.startsWith('error:')) return false
   if (expect === 'not-ghost') return label !== 'ghost'
-  return label === expect
+  if (label === expect) return true
+  if (expect.startsWith('command:') && label.startsWith('command:')) {
+    const alternatives = EQUIVALENT_COMMANDS[expect.slice('command:'.length)] ?? []
+    return alternatives.includes(label.slice('command:'.length))
+  }
+  return false
+}
+
+/**
+ * What the client alone would do with the sentence, before any AI call: the offline help
+ * matcher answers GHOST, and a few phrases map straight to a command. undefined = ask the AI.
+ */
+export function localOutcome(text: string): Outcome | undefined {
+  if (isGhostOfflineAsk(text)) return { status: 200, command: 'GHOST' }
+  const command = offlineCommand(text)
+  return command === undefined ? undefined : { status: 200, command }
 }
 
 export interface Row {
@@ -105,11 +133,19 @@ async function main(argv: readonly string[]): Promise<number> {
   const cases = evalCases()
   console.log(`Evaluating ${cases.length} cases against ${url} (about ${Math.round((cases.length * PACING_MS) / 1000)} s)...`)
   const rows: Row[] = []
+  let sentAny = false
   for (let i = 0; i < cases.length; i++) {
     const c = cases[i] as EvalCase
-    if (i > 0) await new Promise((r) => setTimeout(r, PACING_MS))
-    const o = await send(fetch, url, c)
-    const row: Row = { c, label: classify(o), pass: judge(c.expect, o) }
+    const local = localOutcome(c.text)
+    let o: Outcome
+    if (local !== undefined) {
+      o = local
+    } else {
+      if (sentAny) await new Promise((r) => setTimeout(r, PACING_MS))
+      sentAny = true
+      o = await send(fetch, url, c)
+    }
+    const row: Row = { c, label: classify(o) + (local !== undefined ? ' (local)' : ''), pass: judge(c.expect, o) }
     rows.push(row)
     console.log(formatRow(row, i))
   }
