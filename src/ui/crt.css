@@ -154,6 +154,29 @@ select {
   border-color: var(--fg);
 }
 
+/* Ghost_Voice toggle: reuses the .controls button look; pulses while speaking. */
+#voice-toggle[data-speaking="true"] {
+  animation: voice-pulse 1.1s ease-in-out infinite;
+}
+
+@keyframes voice-pulse {
+  0%,
+  100% {
+    border-color: var(--fg-dim);
+  }
+  50% {
+    border-color: var(--fg);
+    box-shadow: 0 0 6px var(--fg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #voice-toggle[data-speaking="true"] {
+    animation: none !important;
+    border-color: var(--fg);
+  }
+}
+
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;

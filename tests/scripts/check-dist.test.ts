@@ -4,6 +4,7 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { checkDist, PRIVACY_STATEMENTS } from '../../scripts/check-dist'
 import { HAUNT_CHUNK_MARKER } from '../../src/haunt/haunting'
+import { GHOST_VOICE_CHUNK_MARKER } from '../../src/ui/dom/ghost-voice'
 import { CREDITS_HTML, cleanupDists, makeDist } from './support/make-dist'
 
 const CRED_TOKEN = 'CLOUDFLARE' + '_API_' + 'TOKEN=abc'
@@ -78,6 +79,26 @@ describe('check-dist', () => {
     const errors = checkDist(dir).join('\n')
     expect(errors).toContain('loaded at start')
     expect(errors).toContain('haunt chunk missing')
+  })
+
+  it('fails when the start script contains the Ghost_Voice marker', () => {
+    const dir = makeDist({ startScript: `const m = "${GHOST_VOICE_CHUNK_MARKER}"; import("./voice.js")` })
+    expect(checkDist(dir).some((e) => e.includes('dist/assets/index.js') && e.includes('Ghost_Voice chunk marker'))).toBe(true)
+  })
+
+  it('fails when no lazy chunk contains the Ghost_Voice marker', () => {
+    const dir = makeDist({ files: { 'assets/ghost.js': null } })
+    expect(checkDist(dir).some((e) => e.includes('Ghost_Voice chunk missing'))).toBe(true)
+  })
+
+  it('does not scan dist/voice/*.mp3 as text for credentials', () => {
+    const dir = makeDist({ files: { 'voice/aaaa0001.mp3': `ID3 ${CRED_TOKEN}`, 'voice/manifest.json': '{"version":1,"entries":{}}' } })
+    expect(checkDist(dir)).toEqual([])
+  })
+
+  it('fails when a dist/voice/manifest.json contains a credential', () => {
+    const dir = makeDist({ files: { 'voice/manifest.json': `{"x":"${CRED_TOKEN}"}` } })
+    expect(checkDist(dir).join('\n')).toContain('dist/voice/manifest.json:')
   })
 
   it('fails when a privacy statement is missing', () => {

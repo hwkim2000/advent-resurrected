@@ -17,7 +17,8 @@ function isExempt(path: string): boolean {
   return (
     path === ".dev.vars.example" ||
     path === "scripts/credential-patterns.ts" ||
-    path.startsWith(".kiro/specs/ai-parser/")
+    path.startsWith(".kiro/specs/ai-parser/") ||
+    path.startsWith(".kiro/specs/ghost-voice/")
   );
 }
 

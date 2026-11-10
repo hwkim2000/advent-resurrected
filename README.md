@@ -24,6 +24,15 @@ npm run check:dist # verify dist/ contents (pages, VT323 font + OFL.txt, credits
 npm run test       # vitest --run (single run)
 ```
 
+### Narrator voice audio
+
+The narrator's spoken lines are pre-generated MP3 files under `public/voice/` (plus `manifest.json`), made once by `npm run gen:voice` with Cloudflare Workers AI MeloTTS. Until that is run, the voice is simply inactive (no VOICE button).
+
+- Environment variables (names only, set in your own shell): CLOUDFLARE\_ACCOUNT\_ID and CLOUDFLARE\_API\_TOKEN (backslashes are markdown escapes; the repository credential scan forbids the literal names outside its own files).
+- **ffmpeg** (with libmp3lame) must be on PATH: MeloTTS returns 44.1 kHz WAV, and the script transcodes each line to a mono 22.05 kHz, 48 kbps MP3. The script stops with a clear message if ffmpeg is missing (the dry run does not need it).
+- `npm run gen:voice -- --dry-run` makes no network call; `--force` regenerates everything. Re-runs only generate changed lines.
+- Cloudflare lists MeloTTS with a planned deprecation date of **2026-11-20**: run the generation before then and commit the files. Regenerating later would need another model.
+
 ## Deploy to Cloudflare Pages
 
 These steps are instructions for the **manual first deploy**, done by the project owner. The repository's tasks and CI never deploy, and nothing in the repo holds keys, tokens or account identifiers. `wrangler.toml` contains only non-secret settings (Pages settings, the AI and D1 bindings with a placeholder database id, and the tunable variables).

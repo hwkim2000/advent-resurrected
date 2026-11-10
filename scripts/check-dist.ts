@@ -9,6 +9,7 @@ import { dirname, extname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Window } from 'happy-dom'
 import { HAUNT_CHUNK_MARKER } from '../src/haunt/haunting'
+import { GHOST_VOICE_CHUNK_MARKER } from '../src/ui/dom/ghost-voice'
 import { VOICE_DISCLOSURE_TEXT } from '../src/shared/voice-disclosure'
 import { findCredentials } from './credential-patterns'
 import { checkHeadersPolicy } from './headers-policy'
@@ -60,6 +61,7 @@ function listTextFiles(dir: string): string[] {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const full = join(dir, entry.name)
     if (entry.isDirectory()) out.push(...listTextFiles(full))
+    else if (extname(entry.name).toLowerCase() === '.mp3') continue // binary audio (dist/voice), never text
     else if (SCANNED_NAMES.has(entry.name) || SCANNED_EXTENSIONS.has(extname(entry.name).toLowerCase())) {
       out.push(full)
     }
@@ -151,6 +153,18 @@ function checkVoice(distDir: string, errors: string[]): void {
  * haunt chunk marker, and some lazily loaded .js under dist/assets must.
  */
 function checkHaunt(distDir: string, errors: string[]): void {
+  checkLazyMarker(distDir, errors, HAUNT_CHUNK_MARKER, 'haunt')
+}
+
+/**
+ * Ghost_Voice isolation (ghost-voice Requirement 5.3): the marker (kept on the toggle's
+ * data-voice-build attribute) must be absent from the start-time scripts and present in a lazy chunk.
+ */
+function checkGhostVoice(distDir: string, errors: string[]): void {
+  checkLazyMarker(distDir, errors, GHOST_VOICE_CHUNK_MARKER, 'Ghost_Voice')
+}
+
+function checkLazyMarker(distDir: string, errors: string[], marker: string, label: string): void {
   const indexPath = join(distDir, 'index.html')
   const startFiles = new Set<string>()
   if (isFile(indexPath)) {
@@ -170,8 +184,8 @@ function checkHaunt(distDir: string, errors: string[]): void {
   }
   for (const rel of startFiles) {
     const target = join(distDir, rel)
-    if (isFile(target) && readFileSync(target, 'utf8').includes(HAUNT_CHUNK_MARKER)) {
-      errors.push(`dist/${rel}: loaded at start but contains the haunt chunk marker (haunt code must load lazily)`)
+    if (isFile(target) && readFileSync(target, 'utf8').includes(marker)) {
+      errors.push(`dist/${rel}: loaded at start but contains the ${label} chunk marker (${label} code must load lazily)`)
     }
   }
 
@@ -181,9 +195,9 @@ function checkHaunt(distDir: string, errors: string[]): void {
     existsSync(assets) &&
     listTextFiles(assets).some(
       (f) =>
-        f.endsWith('.js') && !startAbs.has(resolve(f)) && readFileSync(f, 'utf8').includes(HAUNT_CHUNK_MARKER),
+        f.endsWith('.js') && !startAbs.has(resolve(f)) && readFileSync(f, 'utf8').includes(marker),
     )
-  if (!found) errors.push('no lazily loaded .js under dist/assets contains the haunt chunk marker (haunt chunk missing)')
+  if (!found) errors.push(`no lazily loaded .js under dist/assets contains the ${label} chunk marker (${label} chunk missing)`)
 }
 
 /** Runs every check against `distDir`; returns the list of failures (empty when OK). */
@@ -257,6 +271,7 @@ export function checkDist(distDir: string): string[] {
 
   checkVoice(distDir, errors)
   checkHaunt(distDir, errors)
+  checkGhostVoice(distDir, errors)
 
   // Credential scan over every text file; patterns are reported, never the matched text.
   for (const file of listTextFiles(distDir)) {

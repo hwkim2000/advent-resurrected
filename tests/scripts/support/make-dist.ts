@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { PRIVACY_STATEMENTS } from '../../../scripts/check-dist'
 import { HAUNT_CHUNK_MARKER } from '../../../src/haunt/haunting'
+import { GHOST_VOICE_CHUNK_MARKER } from '../../../src/ui/dom/ghost-voice'
 import { VOICE_DISCLOSURE_TEXT } from '../../../src/shared/voice-disclosure'
 
 export const PRIVACY_TEXT = Object.values(PRIVACY_STATEMENTS)
@@ -67,6 +68,7 @@ export function makeDist(over: Overrides = {}): string {
     'assets/voice.js':
       over.voiceChunk === undefined ? 'export const API = "webkitSpeechRecognition" in window' : over.voiceChunk,
     'assets/haunt.js': `export const M = "${HAUNT_CHUNK_MARKER}"`,
+    'assets/ghost.js': `export const B = {'data-voice-build':"${GHOST_VOICE_CHUNK_MARKER}"}`,
     'fonts/VT323-Regular.woff2': 'font',
     'fonts/OFL.txt': 'license',
     '_routes.json': JSON.stringify({ version: 1, include: ['/api/*'], exclude: [] }),

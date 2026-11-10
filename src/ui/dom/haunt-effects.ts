@@ -3,18 +3,31 @@
 // Timers live here (src/ui/dom is the only place allowed to use them). Text is
 // changed only through Text node data; no innerHTML.
 
-import type { MotionPreference } from '../types';
+import type { KeyValueStore, Logger, MotionPreference } from '../types';
+import { createGhostVoice } from './ghost-voice';
+import type { CreateQueue, FetchResponseLike, GhostVoice, VoiceContextLike, VoiceItem } from './ghost-voice';
 
 export interface HauntEffects {
   setDim(level: number): void;
   flashGlitch(): void;
   reincarnate(): void;
   reset(): void;
+  /** Haunted game start: activates Ghost_Voice (no-op without kv and a queue factory). */
+  start(): void;
+  speak(item: VoiceItem): void;
+  stopSpeaking(): void;
 }
 
 export interface HauntEffectsDeps {
   motion: MotionPreference;
   doc?: Document;
+  /** Ghost_Voice needs all of kv and createQueue; without them it stays off. */
+  kv?: KeyValueStore;
+  createQueue?: CreateQueue;
+  log?: Logger;
+  fetchFn?: (url: string) => Promise<FetchResponseLike>;
+  makeContext?: () => VoiceContextLike | undefined;
+  now?: () => number;
 }
 
 export const GLITCH_MS = 1000;
@@ -127,6 +140,38 @@ export function createHauntEffects(deps: HauntEffectsDeps): HauntEffects {
     }
   }
 
+  let voice: GhostVoice | undefined;
+
+  function getVoice(): GhostVoice | undefined {
+    if (voice !== undefined) return voice;
+    if (deps.kv === undefined || deps.createQueue === undefined) return undefined;
+    try {
+      const g = globalThis as unknown as {
+        fetch?: (url: string) => Promise<FetchResponseLike>;
+        AudioContext?: new () => VoiceContextLike;
+        webkitAudioContext?: new () => VoiceContextLike;
+      };
+      voice = createGhostVoice({
+        doc,
+        kv: deps.kv,
+        motion: deps.motion,
+        createQueue: deps.createQueue,
+        log: (message, error) => deps.log?.error(message, error),
+        now: deps.now ?? (() => Date.now()),
+        fetchFn: deps.fetchFn ?? ((url) => g.fetch!(url)),
+        makeContext:
+          deps.makeContext ??
+          (() => {
+            const Ctor = g.AudioContext ?? g.webkitAudioContext;
+            return Ctor === undefined ? undefined : new Ctor();
+          }),
+      });
+    } catch {
+      voice = undefined;
+    }
+    return voice;
+  }
+
   function stopFlicker(): void {
     const f = flicker;
     if (f === undefined) return;
@@ -175,6 +220,35 @@ export function createHauntEffects(deps: HauntEffectsDeps): HauntEffects {
       restoreGlitch();
       stopFlicker();
       root.style.removeProperty(DIM_PROPERTY);
+      try {
+        voice?.dispose();
+      } catch {
+        /* ignore */
+      }
+    },
+
+    start() {
+      try {
+        void getVoice()?.start();
+      } catch {
+        /* voice is optional */
+      }
+    },
+
+    speak(item) {
+      try {
+        voice?.speak(item);
+      } catch {
+        /* voice is optional */
+      }
+    },
+
+    stopSpeaking() {
+      try {
+        voice?.stop();
+      } catch {
+        /* voice is optional */
+      }
     },
   };
 }

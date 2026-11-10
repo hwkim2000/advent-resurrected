@@ -12,6 +12,7 @@ import { dimLevel } from './dim';
 import { createGlitchPolicy } from './glitch';
 import { detectMoments, type TurnInfo } from './moments';
 import { createNarrator } from './narrator';
+import { normalizeVoiceLine, voiceKey } from './voice-lines';
 import {
   createYesNoGate,
   transformYesNo,
@@ -52,6 +53,9 @@ export interface HauntEffectsPort {
   flashGlitch(): void;
   reincarnate(): void;
   reset(): void;
+  /** Ghost_Voice (optional): speak one narrator line, or stop speaking. */
+  speak?(item: { key: string; text: string }): void;
+  stopSpeaking?(): void;
 }
 
 export interface HauntMotion {
@@ -72,6 +76,9 @@ export interface Haunting {
   /** Unregister everything and clear the effects. */
   dispose(): void;
 }
+
+/** Re-exported so the loader can hand the queue factory to the UI effects (src/ui cannot import src/haunt). */
+export { createSpeechQueue } from './speech-queue';
 
 const MAZE_TEXT = 'all alike';
 
@@ -128,11 +135,17 @@ export function createHaunting(deps: HauntingDeps): Haunting {
         if (block.kind !== 'original' || !block.text.includes(MAZE_TEXT)) return;
         if (glitchPolicy.visit()) effects.flashGlitch();
       });
+      safe(() => {
+        if (block.kind !== 'narrator') return;
+        const text = normalizeVoiceLine(block.text);
+        if (text !== '') effects.speak?.({ key: voiceKey(text), text });
+      });
     }),
   );
 
   const yesNoGate = createYesNoGate();
   register(() => hooks.addInputTransformer((line, ctx) => {
+    if (!disposed) safe(() => effects.stopSpeaking?.());
     try {
       return disposed ? line : transformYesNo(line, ctx);
     } catch {
@@ -150,12 +163,14 @@ export function createHaunting(deps: HauntingDeps): Haunting {
   return {
     gameStart(state) {
       if (disposed) return;
+      safe(() => effects.stopSpeaking?.());
       safe(() => narrator.gameStart());
       safe(() => glitchPolicy.reset());
       if (state !== undefined) safe(() => effects.setDim(dimLevel(state.game)));
     },
     dispose() {
       if (disposed) return;
+      safe(() => effects.stopSpeaking?.());
       disposed = true;
       for (const d of disposers.splice(0)) safe(d);
       safe(() => narrator.reset());

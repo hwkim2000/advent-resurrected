@@ -130,6 +130,7 @@ function main(): void {
     loadHaunting: loadHauntingModule,
     loadEffects: loadHauntEffectsModule,
     seed: Date.now() | 0,
+    kv,
   });
   const onGameStart = createGameStartFanOut(
     [aiLoader.onGameStart, voiceLoader.onGameStart, hauntingStart],

@@ -36,3 +36,12 @@ In Haunted mode you can speak commands. Browsers that support it show a micropho
 - This site never records or stores audio. A line you speak is stored like a line you type.
 - 1976 mode never uses the microphone.
 - If voice does not work, typing always works.
+
+## Narrator voice (AI-generated)
+
+In Haunted mode the narrator's lines are spoken aloud. The narrator voice is AI-generated: the lines were converted to speech once, ahead of time, with the MeloTTS text-to-speech model (MIT license) run through Cloudflare Workers AI, and the resulting audio files are served from this site. The game plays them with a ghostly echo effect in your browser.
+
+- The audio is pre-rendered. No text-to-speech service is called while you play.
+- No player input is sent anywhere for the voice. Your typed or spoken lines never leave your device because of it.
+- 1976 mode loads no narrator voice.
+- You can switch the voice off with the VOICE button; typing and reading always work.

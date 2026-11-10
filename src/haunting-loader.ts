@@ -4,7 +4,7 @@
 
 import type { GameState } from './engine/index';
 import type { ExtensionHooks } from './ui/extension-hooks';
-import type { Logger, Mode, MotionPreference } from './ui/types';
+import type { Logger, KeyValueStore, Mode, MotionPreference } from './ui/types';
 
 export interface HauntingHandle {
   gameStart(state: GameState | undefined): void;
@@ -16,10 +16,17 @@ export interface HauntEffectsHandle {
   flashGlitch(): void;
   reincarnate(): void;
   reset(): void;
+  /** Haunted game start hook for Ghost_Voice (optional so older fakes still fit). */
+  start?(): void;
 }
 
 /** The lazy src/haunt/haunting chunk. */
 export interface HauntingModule {
+  /** Queue factory handed to the UI effects (src/ui cannot import src/haunt). */
+  createSpeechQueue?: <T>(deps: {
+    player: { play(item: T, onEnd: () => void): void; stop(): void };
+    now(): number;
+  }) => { offer(item: T): void; cancel(): void; isPlaying(): boolean; hasWaiting(): boolean };
   createHaunting(deps: {
     hooks: ExtensionHooks;
     effects: HauntEffectsHandle;
@@ -30,7 +37,12 @@ export interface HauntingModule {
 
 /** The lazy src/ui/dom/haunt-effects chunk. */
 export interface HauntEffectsModule {
-  createHauntEffects(deps: { motion: MotionPreference }): HauntEffectsHandle;
+  createHauntEffects(deps: {
+    motion: MotionPreference;
+    kv?: KeyValueStore;
+    log?: Logger;
+    createQueue?: HauntingModule['createSpeechQueue'];
+  }): HauntEffectsHandle;
 }
 
 export interface HauntingHost {
@@ -46,6 +58,8 @@ export interface HauntingLoaderDeps {
   loadEffects(): Promise<HauntEffectsModule>;
   /** Seed for the narrator picker; main.ts decides (for example Date.now()). */
   seed: number;
+  /** Key-value store for the VOICE toggle preference; without it Ghost_Voice stays off. */
+  kv?: KeyValueStore;
 }
 
 /**
@@ -82,13 +96,25 @@ export function createHauntingLoader(deps: HauntingLoaderDeps): (mode: Mode) => 
       const host = deps.getHost();
       if (host === undefined) throw new Error('haunting host unavailable');
       if (active === undefined) {
-        effects ??= modules.effects.createHauntEffects({ motion: host.motion });
+        effects ??= modules.effects.createHauntEffects({
+          motion: host.motion,
+          log: deps.log,
+          ...(deps.kv !== undefined ? { kv: deps.kv } : {}),
+          ...(modules.haunting.createSpeechQueue !== undefined
+            ? { createQueue: modules.haunting.createSpeechQueue }
+            : {}),
+        });
         active = modules.haunting.createHaunting({
           hooks: host.hooks,
           effects,
           motion: host.motion,
           seed: deps.seed,
         });
+      }
+      try {
+        effects?.start?.();
+      } catch (e) {
+        deps.log.error('ghost voice failed to start', e);
       }
       active.gameStart(host.engineState);
     } catch (e) {
