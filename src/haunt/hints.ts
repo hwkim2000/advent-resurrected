@@ -136,7 +136,7 @@ export const HINT_RULES: readonly HintRule[] = Object.freeze([
   ]),
   // reads loc in {LOC_MISTHALL, LOC_EASTBANK}
   rule('mists', (v) => v.loc === LOC_MISTHALL || v.loc === LOC_EASTBANK, [
-    'Hall of Mists. Stairs up, a gap to the west, a low room south. Some bridges get built by waving at the right object.',
+    'Hall of Mists. Stairs down, a dome up, a gap to the west, a low room south. Some bridges get built by waving at the right object.',
     'Mist, a gap too wide to jump, and a rod somewhere that would love to help. Ask it nicely, with some arm movement.',
   ]),
   // reads loc == LOC_BIRDCHAMBER

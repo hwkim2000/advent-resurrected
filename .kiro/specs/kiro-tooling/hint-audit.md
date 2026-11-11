@@ -103,3 +103,7 @@ Suggested fix for the Hall of Mists line (not applied; I may not edit source): c
 State at the end: `get_state` reports location sw end, empty inventory, score 391, turn 348, `caveClosing` true, `dragonDead` true, `seed` 1318612053, lives used 0.
 
 Not verified: the BLAST ending and the 430 score (stopped before BLAST on purpose); the other maze, Bedquilt, treasureAbove and start/building checkpoints (not requested); hint variants beyond the first one.
+
+### Ghost-writer fix
+
+Applied the Hall of Mists fix in `src/haunt/hints.ts` (rule `mists`, first line): "Stairs up" is now "Stairs down, a dome up", so the line reads "Hall of Mists. Stairs down, a dome up, a gap to the west, a low room south. Some bridges get built by waving at the right object." The second line is unchanged. `npx vitest --run tests/haunt/line-lint.test.ts` passes (49 tests). The ghost-writer agent cannot write under `.kiro/`, so this note was added by hand, and the voice audio for the changed line was regenerated outside the agent.
