@@ -5,6 +5,8 @@ import {
   CHEST,
   DRAGON,
   DRAGON_BARS,
+  FIE,
+  FOE,
   GRATE,
   GRATE_OPEN,
   KEYS,
@@ -13,14 +15,21 @@ import {
   LOC_BIRDCHAMBER,
   LOC_BUILDING,
   LOC_DEBRIS,
+  LOC_EASTBANK,
   LOC_GRATE,
   LOC_KINGHALL,
+  LOC_MISTHALL,
+  LOC_NE,
   LOC_NECHASM,
+  LOC_PLOVER,
   LOC_SECRET4,
   LOC_START,
+  LOC_SW,
   LOC_ALIKE1,
   NDWARVES,
+  OGRE,
   ROD,
+  ROD2,
   SNAKE,
   SNAKE_BLOCKS,
   SNAKE_CHASED,
@@ -41,6 +50,7 @@ const TREASURE = OBJECTS.findIndex((o, i) => i > 0 && o.isTreasure);
 function at(loc: number, edit: (g: GameState) => void = () => {}): GameState {
   const s = cloneState(newGame(0));
   s.game.loc = loc;
+  s.session.pending = { k: 'command' };
   edit(s);
   return s;
 }
@@ -56,11 +66,11 @@ const ruleOf = (s: GameState) => selectHintRule(makeHintView(s)).id;
 describe('hint table text rules', () => {
   const lines = HINT_RULES.flatMap((r) => r.lines.map((l) => [r.id, l] as const));
 
-  it('has 40 to 60 lines, 16 to 20 rules plus fallback, 2 to 3 lines each', () => {
+  it('has 40 to 75 lines, 16 to 26 rules plus fallback, 2 to 3 lines each', () => {
     expect(lines.length).toBeGreaterThanOrEqual(40);
-    expect(lines.length).toBeLessThanOrEqual(60);
+    expect(lines.length).toBeLessThanOrEqual(75);
     expect(HINT_RULES.length - 1).toBeGreaterThanOrEqual(16);
-    expect(HINT_RULES.length - 1).toBeLessThanOrEqual(20);
+    expect(HINT_RULES.length - 1).toBeLessThanOrEqual(26);
     for (const r of HINT_RULES) {
       expect(r.lines.length, r.id).toBeGreaterThanOrEqual(2);
       expect(r.lines.length, r.id).toBeLessThanOrEqual(3);
@@ -204,6 +214,51 @@ describe('hint rules fire on constructed states', () => {
     expect(last.id).toBe('fallback');
     expect(last.when(makeHintView(at(LOC_START)))).toBe(true);
     expect(last.when(makeHintView(at(LOC_ALIKE1)))).toBe(true);
+  });
+});
+
+describe('hint rules added from the audit', () => {
+  it('titlePrompt: only while the opening instructions question is pending', () => {
+    const s = cloneState(newGame(0));
+    s.session.pending = { k: 'novice' };
+    expect(ruleOf(s)).toBe('titlePrompt');
+    s.session.pending = { k: 'command' };
+    expect(ruleOf(s)).not.toBe('titlePrompt');
+  });
+
+  it('plover: Plover Room', () => {
+    expect(ruleOf(at(LOC_PLOVER, (g) => { carry(g, LAMP); g.game.tally -= 1; }))).toBe('plover');
+  });
+
+  it('mists: Hall of Mists and the east bank of the fissure', () => {
+    expect(ruleOf(at(LOC_MISTHALL, lit))).toBe('mists');
+    expect(ruleOf(at(LOC_EASTBANK, lit))).toBe('mists');
+  });
+
+  it('danger: a dwarf or the ogre in the room; dwarves must be active', () => {
+    const dwarf = (g: GameState) => { lit(g); g.game.dflag = 3; g.game.dwarves[1]!.loc = g.game.loc; };
+    expect(ruleOf(at(LOC_MISTHALL, dwarf))).toBe('danger');
+    expect(ruleOf(at(LOC_MISTHALL, (g) => { lit(g); g.game.dwarves[1]!.loc = g.game.loc; }))).toBe('mists');
+    expect(ruleOf(at(LOC_ALIKE1, (g) => { lit(g); g.game.objects[OGRE]!.place = LOC_ALIKE1; }))).toBe('danger');
+  });
+
+  it('foeSaid: after FEE FIE FOE, until the next input moves foobar on', () => {
+    expect(ruleOf(at(LOC_KINGHALL, (g) => { lit(g); g.game.objects[SNAKE]!.prop = SNAKE_CHASED; g.game.foobar = FOE; }))).toBe('foeSaid');
+    expect(ruleOf(at(LOC_KINGHALL, (g) => { lit(g); g.game.objects[SNAKE]!.prop = SNAKE_CHASED; g.game.foobar = FIE; }))).not.toBe('foeSaid');
+  });
+
+  it('repository: the rod nearby gets the carry hint, the rod parked gets the BLAST hint', () => {
+    const closed = (g: GameState) => { g.game.closng = true; g.game.closed = true; g.game.objects[ROD2]!.prop = 0; };
+    expect(ruleOf(at(LOC_SW, (g) => { closed(g); g.game.objects[ROD2]!.place = LOC_SW; }))).toBe('repoRod');
+    expect(ruleOf(at(LOC_SW, (g) => { closed(g); g.game.objects[ROD2]!.place = LOC_NE; }))).toBe('repoBlast');
+    // At the NE end without the rod, BLAST is the losing ending: stay with the generic closing line.
+    expect(ruleOf(at(LOC_NE, (g) => { closed(g); g.game.objects[ROD2]!.place = LOC_SW; }))).toBe('closing');
+    // Cave closing but not closed yet: unchanged.
+    expect(ruleOf(at(LOC_KINGHALL, (g) => { lit(g); g.game.closng = true; }))).toBe('closing');
+  });
+
+  it('the maze hint does not claim the rooms are all alike', () => {
+    expect(HINT_POOLS['maze']!.join(' ')).not.toMatch(/all alike/i);
   });
 });
 

@@ -195,12 +195,12 @@ Run `npm run build` first, then `npm run check:layout`. The script serves `dist/
 
 ## Developer tooling
 
-- `npm run mcp:advent` starts an MCP server over stdio (tools `new_game`, `send_command`, `get_state`, `ask_ghost`) that plays the engine in memory; SAVE never touches disk. `npm run mcp:demo` spawns it as a real stdio client and prints a 20-turn transcript.
+- `npm run mcp:advent` starts an MCP server over stdio (tools `new_game`, `send_command`, `send_commands` (up to 60 lines in order, per-command location summary plus the final output), `get_state`, `ask_ghost`) that plays the engine in memory; SAVE never touches disk. `npm run mcp:demo` spawns it as a real stdio client and prints a 20-turn transcript.
 - MCP config for Kiro (`.kiro/settings/mcp.json`, created by hand, not by the agent):
 
   ```json
   { "mcpServers": { "advent": { "command": "npx", "args": ["tsx", "tools/advent-mcp/server.ts"],
-    "autoApprove": ["new_game", "send_command", "get_state", "ask_ghost"], "disabled": false } } }
+    "autoApprove": ["new_game", "send_command", "send_commands", "get_state", "ask_ghost"], "disabled": false } } }
   ```
 
 - Hooks in `.kiro/hooks/`: `engine-fidelity.json` (PostFileSave on `src/engine`, `src/data`, `original/`, `scripts/generate-data.ts`: fidelity and walkthrough tests), `line-lint.json` (PostFileSave on the narrator line files: line lint and voice manifest sync), `predeploy.json` (Manual: `npm run predeploy`; the Manual trigger cannot be invoked from the Kiro CLI, so run the npm script yourself).

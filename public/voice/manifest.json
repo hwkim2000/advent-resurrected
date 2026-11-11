@@ -22,6 +22,16 @@
       "bytes": 27585,
       "text": "And now it is dark. I have been in the dark a long time, so I find this homey."
     },
+    "04be678f": {
+      "file": "04be678f.mp3",
+      "bytes": 44199,
+      "text": "Instructions? They would fit on a postcard and I am not mailing it. Say YES to read them or NO to wing it. Winging it is traditional."
+    },
+    "0c85f061": {
+      "file": "0c85f061.mp3",
+      "bytes": 39810,
+      "text": "That emerald is lovely and the tunnel is rude. Only so much fits through at once. Decide what you can part with, then wriggle."
+    },
     "1051edba": {
       "file": "1051edba.mp3",
       "bytes": 39027,
@@ -57,6 +67,11 @@
       "bytes": 28839,
       "text": "Dark, but your lantern is right there. Ask it to shine, politely, in two words or fewer."
     },
+    "1a01e6b9": {
+      "file": "1a01e6b9.mp3",
+      "bytes": 39967,
+      "text": "Green glow, an egg-sized emerald, and a tunnel west that hates luggage. Work out what to leave behind before you try the squeeze."
+    },
     "1ac92349": {
       "file": "1ac92349.mp3",
       "bytes": 25704,
@@ -87,6 +102,11 @@
       "bytes": 40908,
       "text": "You are in the well house. Pick things up. Pockets were invented for this. Count the items on the floor and decide who you want to be."
     },
+    "228b16f6": {
+      "file": "228b16f6.mp3",
+      "bytes": 44356,
+      "text": "Little dwarf, big temper. If you carry something throwable, now is the moment. If not, leave the room before he rolls his dice."
+    },
     "25d43512": {
       "file": "25d43512.mp3",
       "bytes": 30720,
@@ -97,15 +117,15 @@
       "bytes": 39654,
       "text": "Cage up top, bird down here. I do not make the rules, I only run inside them. Check what you are carrying before you try."
     },
-    "294a19de": {
-      "file": "294a19de.mp3",
-      "bytes": 46393,
-      "text": "Maze. All alike. Leave something lying in each room so you can tell them apart. Clutter is a navigation system, as every messy desk knows."
-    },
     "309d4248": {
       "file": "309d4248.mp3",
       "bytes": 37459,
       "text": "Your lamp is fading. Spend what is left on things that matter. Vending machines exist, even down here."
+    },
+    "30f73d6b": {
+      "file": "30f73d6b.mp3",
+      "bytes": 43259,
+      "text": "Everything is in place for a grand finale, and I am only a ghost, so I cannot press the button. Say the loud word and stand well back."
     },
     "324b1ad0": {
       "file": "324b1ad0.mp3",
@@ -146,6 +166,11 @@
       "file": "451c275c.mp3",
       "bytes": 33228,
       "text": "Snakes dislike one thing in this cave, and it is not me. Think about what you saw earlier that sings."
+    },
+    "4589a2db": {
+      "file": "4589a2db.mp3",
+      "bytes": 36989,
+      "text": "One rod in here is dynamite wearing a disguise. Carry it a good way along the mirror, then walk back without it."
     },
     "48c37a55": {
       "file": "48c37a55.mp3",
@@ -192,6 +217,11 @@
       "bytes": 30720,
       "text": "The dragon is dead. Please do not tell anyone. I do not know who anyone is, but still."
     },
+    "615c59c4": {
+      "file": "615c59c4.mp3",
+      "bytes": 36989,
+      "text": "Dynamite is shy. It dislikes crowds, and it dislikes standing next to you when it goes off. Plan your commute."
+    },
     "629d9fd4": {
       "file": "629d9fd4.mp3",
       "bytes": 35735,
@@ -216,6 +246,11 @@
       "file": "67c86d94.mp3",
       "bytes": 30406,
       "text": "Ooh, loot. Please do not put it in the cloud. I went looking for the cloud once. It was a ceiling."
+    },
+    "6aa3c9e5": {
+      "file": "6aa3c9e5.mp3",
+      "bytes": 43729,
+      "text": "Maze. Whatever the room claims, you will not tell them apart by looking. Leave something lying in each one. Clutter is a navigation system."
     },
     "6ebc418d": {
       "file": "6ebc418d.mp3",
@@ -257,6 +292,11 @@
       "bytes": 44042,
       "text": "Dragons have been beaten before. The method is famously unwise. Ask yourself how brave you feel and whether anyone is watching."
     },
+    "8379844c": {
+      "file": "8379844c.mp3",
+      "bytes": 43259,
+      "text": "Dwarves throw knives and ogres block doors. Your problems sometimes solve each other, if you pick the right target at the right moment."
+    },
     "8466a3d9": {
       "file": "8466a3d9.mp3",
       "bytes": 33228,
@@ -292,6 +332,11 @@
       "bytes": 26331,
       "text": "Dwarf spotted. No apps, no wifi, just an axe. I respect that."
     },
+    "8e868eaf": {
+      "file": "8e868eaf.mp3",
+      "bytes": 38556,
+      "text": "Hall of Mists. Stairs up, a gap to the west, a low room south. Some bridges get built by waving at the right object."
+    },
     "8faf9d18": {
       "file": "8faf9d18.mp3",
       "bytes": 37303,
@@ -316,6 +361,11 @@
       "file": "9b3d0221.mp3",
       "bytes": 30250,
       "text": "Lamp out. I will not say anything. I will just hover nearby, which is all I do anyway."
+    },
+    "9b3f8fde": {
+      "file": "9b3f8fde.mp3",
+      "bytes": 47177,
+      "text": "That is a yes or no question. YES gets you the rules, NO gets you the cave. I have waited a long time for you to pick one, so please do."
     },
     "9d11db6f": {
       "file": "9d11db6f.mp3",
@@ -342,6 +392,11 @@
       "bytes": 31974,
       "text": "You are dead. It happens to the best of us. It happened to me, and look how well I turned out."
     },
+    "a3ec7c8e": {
+      "file": "a3ec7c8e.mp3",
+      "bytes": 33698,
+      "text": "FEE, FIE, FOE. That poem has four lines and I am not saying the last one for you. Finish the verse."
+    },
     "a64da8c5": {
       "file": "a64da8c5.mp3",
       "bytes": 31817,
@@ -351,6 +406,11 @@
       "file": "a69860ec.mp3",
       "bytes": 31974,
       "text": "Bare hands against a dragon. I offered that as a joke. Nobody has ever been this committed."
+    },
+    "a98f18aa": {
+      "file": "a98f18aa.mp3",
+      "bytes": 45453,
+      "text": "Rod set down, and you are a safe distance away. The word you want is short, loud, and rhymes with last. Do try to enjoy the ending."
     },
     "abf2305d": {
       "file": "abf2305d.mp3",
@@ -371,6 +431,11 @@
       "file": "b1053488.mp3",
       "bytes": 26488,
       "text": "You killed it with your bare hands. I wrote the rules and even I did not see that coming."
+    },
+    "b3949e04": {
+      "file": "b3949e04.mp3",
+      "bytes": 36362,
+      "text": "Mist, a gap too wide to jump, and a rod somewhere that would love to help. Ask it nicely, with some arm movement."
     },
     "b4594857": {
       "file": "b4594857.mp3",
@@ -406,6 +471,11 @@
       "file": "c4548632.mp3",
       "bytes": 18651,
       "text": "REINCARNATION IN PROGRESS... 3... 2... 1..."
+    },
+    "c5f2f434": {
+      "file": "c5f2f434.mp3",
+      "bytes": 32601,
+      "text": "Three words down. Giants like a rhyme complete, and some eggs like to come home. Say the last one."
     },
     "c8235462": {
       "file": "c8235462.mp3",

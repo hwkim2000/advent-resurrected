@@ -13,7 +13,10 @@ import {
   LOC_BIRDCHAMBER,
   LOC_COBBLE,
   LOC_DEBRIS,
+  LOC_EASTBANK,
   LOC_GRATE,
+  LOC_MISTHALL,
+  LOC_PLOVER,
 } from '../data/constants';
 import type { HintView } from './hint-view';
 
@@ -39,6 +42,13 @@ function rule(
 const CAVE_ENTRANCE_ROOMS: ReadonlySet<number> = new Set([LOC_BELOWGRATE, LOC_COBBLE, LOC_DEBRIS]);
 
 export const HINT_RULES: readonly HintRule[] = Object.freeze([
+  // ---- the opening question ----
+  // reads session.pending.k == 'novice' (the "Would you like instructions?" prompt)
+  rule('titlePrompt', (v) => v.titlePrompt, [
+    'That is a yes or no question. YES gets you the rules, NO gets you the cave. I have waited a long time for you to pick one, so please do.',
+    'Instructions? They would fit on a postcard and I am not mailing it. Say YES to read them or NO to wing it. Winging it is traditional.',
+  ]),
+
   // ---- urgent: light and time ----
   // reads game.limit < 0 (lamp ran out) and IS_DARK_HERE()
   rule('lampDead', (v) => v.lampDead && v.dark, [
@@ -56,6 +66,16 @@ export const HINT_RULES: readonly HintRule[] = Object.freeze([
     'Dark, but your lantern is right there. Ask it to shine, politely, in two words or fewer.',
     'Light is a choice, and you are holding the choice. Please do not wander in the dark. I like you and I hate paperwork.',
   ]),
+  // reads game.closed, HERE(ROD2) false, loc != LOC_NE, ROD2 found (BLAST then gives the victory ending)
+  rule('repoBlast', (v) => v.caveClosed && v.rod2Found && !v.rod2Here && !v.atNeEnd, [
+    'Rod set down, and you are a safe distance away. The word you want is short, loud, and rhymes with last. Do try to enjoy the ending.',
+    'Everything is in place for a grand finale, and I am only a ghost, so I cannot press the button. Say the loud word and stand well back.',
+  ]),
+  // reads game.closed, HERE(ROD2) (BLAST with the rod beside you is the splatter ending)
+  rule('repoRod', (v) => v.caveClosed && v.rod2Here, [
+    'One rod in here is dynamite wearing a disguise. Carry it a good way along the mirror, then walk back without it.',
+    'Dynamite is shy. It dislikes crowds, and it dislikes standing next to you when it goes off. Plan your commute.',
+  ]),
   // reads game.closng
   rule('closing', (v) => v.closing, [
     'The cave is closing and I cannot tell you everything. The ending has some showmanship in it, and you are standing in the wings.',
@@ -66,6 +86,16 @@ export const HINT_RULES: readonly HintRule[] = Object.freeze([
     'The lamp is warning you. Ration your turns, and think about where a person might find a replacement power source.',
     'Low battery. I remember when that meant a very small man with a very large spare.',
     'Your lamp is fading. Spend what is left on things that matter. Vending machines exist, even down here.',
+  ]),
+  // reads atdwrf(loc) > 0 or AT(OGRE)
+  rule('danger', (v) => v.dwarfHere || v.ogreHere, [
+    'Dwarves throw knives and ogres block doors. Your problems sometimes solve each other, if you pick the right target at the right moment.',
+    'Little dwarf, big temper. If you carry something throwable, now is the moment. If not, leave the room before he rolls his dice.',
+  ]),
+  // reads game.foobar == FOE (FEE, FIE and FOE said in order)
+  rule('foeSaid', (v) => v.foeSaid, [
+    'FEE, FIE, FOE. That poem has four lines and I am not saying the last one for you. Finish the verse.',
+    'Three words down. Giants like a rhyme complete, and some eggs like to come home. Say the last one.',
   ]),
 
   // ---- situational ----
@@ -99,6 +129,16 @@ export const HINT_RULES: readonly HintRule[] = Object.freeze([
     'The crawl and the debris room hold things somebody dropped. A rod, a cage. Take what you find and you may not regret it. Probably.',
     'Not every treasure is shiny. Some are only useful. Look around this little corner before you plunge on.',
   ]),
+  // reads loc == LOC_PLOVER
+  rule('plover', (v) => v.loc === LOC_PLOVER, [
+    'Green glow, an egg-sized emerald, and a tunnel west that hates luggage. Work out what to leave behind before you try the squeeze.',
+    'That emerald is lovely and the tunnel is rude. Only so much fits through at once. Decide what you can part with, then wriggle.',
+  ]),
+  // reads loc in {LOC_MISTHALL, LOC_EASTBANK}
+  rule('mists', (v) => v.loc === LOC_MISTHALL || v.loc === LOC_EASTBANK, [
+    'Hall of Mists. Stairs up, a gap to the west, a low room south. Some bridges get built by waving at the right object.',
+    'Mist, a gap too wide to jump, and a rod somewhere that would love to help. Ask it nicely, with some arm movement.',
+  ]),
   // reads loc == LOC_BIRDCHAMBER
   rule('bird', (v) => v.loc === LOC_BIRDCHAMBER, [
     'A little bird lives here, the best audience I have had since 1977. Bring something to carry it in, and be gentle.',
@@ -113,7 +153,7 @@ export const HINT_RULES: readonly HintRule[] = Object.freeze([
   ]),
   // reads COND_ALLALIKE / COND_ALLDIFFERENT of loc (maze rooms)
   rule('maze', (v) => v.inMaze, [
-    'Maze. All alike. Leave something lying in each room so you can tell them apart. Clutter is a navigation system, as every messy desk knows.',
+    'Maze. Whatever the room claims, you will not tell them apart by looking. Leave something lying in each one. Clutter is a navigation system.',
     'Every passage here is twisty and similar. Map it on paper if you have any. If you do not, the floor will do.',
   ]),
   // reads loc in {LOC_SECRET4, LOC_SECRET6} and objects[DRAGON].prop == DRAGON_BARS

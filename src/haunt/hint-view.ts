@@ -16,18 +16,22 @@ import {
   DRAGON_BARS,
   GRATE,
   GRATE_OPEN,
+  FOE,
   KEYS,
   LAMP,
   LAMP_BRIGHT,
   LOC_BUILDING,
   LOC_KINGHALL,
+  LOC_NE,
   LOC_NECHASM,
   LOC_NOWHERE,
   LOC_SECRET4,
   LOC_SECRET6,
   LOC_SWCHASM,
   NDWARVES,
+  OGRE,
   ROD,
+  ROD2,
   SNAKE,
   SNAKE_BLOCKS,
   TROLL,
@@ -36,7 +40,7 @@ import {
   BRIDGE_WRECKED,
 } from '../data/constants';
 import { OBJECTS } from '../data/dungeon';
-import { cndbit, indeep, isDarkHere, isHere, outside, toting } from '../engine/objects';
+import { at, atdwrf, cndbit, indeep, isDarkHere, isHere, outside, toting } from '../engine/objects';
 import type { GameState } from '../engine/index';
 
 export type HintRegion = 'outside' | 'building' | 'underground';
@@ -88,10 +92,28 @@ export interface HintView {
   readonly treasuresFound: number;
   /** game.closng. */
   readonly closing: boolean;
+  /** session.pending.k == 'novice': the opening "Would you like instructions?" prompt. */
+  readonly titlePrompt: boolean;
+  /** C: atdwrf(loc) > 0: a roaming dwarf is in this room. */
+  readonly dwarfHere: boolean;
+  /** C: AT(OGRE): the ogre is in this room. */
+  readonly ogreHere: boolean;
+  /** game.foobar == FOE: FEE, FIE and FOE were said in order and FOO is next. */
+  readonly foeSaid: boolean;
+  /** game.closed: the cave is all the way closed (the repository endgame). */
+  readonly caveClosed: boolean;
+  /** C: HERE(ROD2): the endgame rod is carried or on the floor here. */
+  readonly rod2Here: boolean;
+  /** !OBJECT_IS_NOTFOUND(ROD2): the endgame rod has been seen. */
+  readonly rod2Found: boolean;
+  /** loc == LOC_NE (the far end of the repository; BLAST here is the losing ending). */
+  readonly atNeEnd: boolean;
 }
 
 /** C: CARRIED (advent.h). Not exported by the engine index. */
 const CARRIED = -1;
+/** C: STATE_NOTFOUND (advent.h). */
+const STATE_NOTFOUND = -1;
 
 /** Build the view. Pure; does not modify `state`. */
 export function makeHintView(state: GameState): HintView {
@@ -141,5 +163,13 @@ export function makeHintView(state: GameState): HintView {
     carryingTreasure,
     treasuresFound: treasureTotal - g.tally,
     closing: g.closng,
+    titlePrompt: state.session.pending.k === 'novice',
+    dwarfHere: atdwrf(g, loc) > 0,
+    ogreHere: at(g, OGRE),
+    foeSaid: g.foobar === FOE,
+    caveClosed: g.closed,
+    rod2Here: isHere(g, ROD2),
+    rod2Found: g.objects[ROD2]!.prop !== STATE_NOTFOUND,
+    atNeEnd: loc === LOC_NE,
   };
 }

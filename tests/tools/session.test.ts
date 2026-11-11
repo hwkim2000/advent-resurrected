@@ -1,9 +1,63 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { newGame, render, serialize, start, step, type Env, type GameState } from '../../src/engine/index';
-import { GameSession, MemoryStorage, SessionError } from '../../tools/advent-mcp/session';
+import { GameSession, MemoryStorage, SessionError, parseSeedCommand } from '../../tools/advent-mcp/session';
 
 const memEnv = (): Env => ({ storage: new MemoryStorage() });
+
+describe('parseSeedCommand', () => {
+  it('reads a two-word SEED command like the engine does', () => {
+    expect(parseSeedCommand('seed 1318612053')).toBe(1318612053);
+    expect(parseSeedCommand('  SEED   -5 ')).toBe(-5);
+    expect(parseSeedCommand('seed 12abc')).toBe(12);
+    expect(parseSeedCommand('seed abc')).toBe(0);
+    expect(parseSeedCommand('seed 4294967297')).toBe(1);
+  });
+
+  it('ignores everything else', () => {
+    for (const l of ['seed', 'seed 1 2', 'look', 'take seed', '']) expect(parseSeedCommand(l), l).toBeUndefined();
+  });
+});
+
+describe('GameSession state fidelity', () => {
+  it('get_state reports the seed an in-game SEED command set, not only the new_game seed', () => {
+    const s = new GameSession();
+    s.newGame(1, 'haunted');
+    expect(s.getState().seed).toBe(1);
+    s.send('no');
+    s.send('seed 1318612053');
+    expect(s.getState().seed).toBe(1318612053);
+    s.newGame(5, 'haunted');
+    expect(s.getState().seed).toBe(5);
+  });
+
+  it('a SEED answer at a yes/no prompt is not a seed command', () => {
+    const s = new GameSession();
+    s.newGame(3, 'haunted');
+    s.send('seed 9');
+    expect(s.getState().seed).toBe(3);
+  });
+
+  it('dragonDead stays true after the dragon is killed and its remains are drunk', () => {
+    const s = new GameSession();
+    s.newGame(1, 'haunted');
+    // The upstream 430-point walkthrough (reference/open-adventure/tests/win430.log) up to the dragon.
+    const log = readFileSync(join(__dirname, '..', '..', 'reference', 'open-adventure', 'tests', 'win430.log'), 'utf8')
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l !== '' && !l.startsWith('#'));
+    const dragonAt = log.indexOf('kill dragon');
+    expect(dragonAt).toBeGreaterThan(0);
+    for (const line of log.slice(0, dragonAt)) s.send(line);
+    expect((s.getState().flags as { dragonDead: boolean }).dragonDead).toBe(false);
+    s.send('kill dragon');
+    s.send('yes');
+    expect((s.getState().flags as { dragonDead: boolean }).dragonDead).toBe(true);
+    s.send('drink blood');
+    expect((s.getState().flags as { dragonDead: boolean }).dragonDead).toBe(true);
+  });
+});
 
 describe('GameSession', () => {
   it('opening text equals the engine start output', () => {

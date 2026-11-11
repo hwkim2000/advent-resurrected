@@ -2,16 +2,16 @@
  * MCP stdio server that lets an agent play the real game engine.
  *
  * New code; not ported from Open Adventure. Tools: new_game, send_command,
- * get_state, ask_ghost. stdout carries MCP protocol messages only; the server
+ * send_commands, get_state, ask_ghost. stdout carries MCP protocol messages only; the server
  * reads/writes no files and makes no network calls.
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { pathToFileURL } from 'node:url';
 import { z } from 'zod';
-import { GameSession, type TurnResult } from './session';
+import { GameSession, MAX_BATCH, type TurnResult } from './session';
 
-export const TOOL_NAMES = ['new_game', 'send_command', 'get_state', 'ask_ghost'] as const;
+export const TOOL_NAMES = ['new_game', 'send_command', 'send_commands', 'get_state', 'ask_ghost'] as const;
 
 type ToolReply = { content: { type: 'text'; text: string }[]; isError?: boolean };
 
@@ -60,6 +60,29 @@ export function createServer(session: GameSession = new GameSession()): McpServe
       try {
         const r = session.send(text);
         return ok(`${r.text}\n${footer(r)}`);
+      } catch (e) {
+        return fail(e);
+      }
+    },
+  );
+
+  server.registerTool(
+    'send_commands',
+    {
+      description: `Run up to ${MAX_BATCH} lines of input in order (one call, strictly sequential). Returns one summary line per command (location, turn, prompt) and only the final command's game output. Stops early if the game ends.`,
+      inputSchema: {
+        commands: z.array(z.string()).describe(`Player input lines, run in order (1 to ${MAX_BATCH})`),
+      },
+    },
+    async ({ commands }) => {
+      try {
+        const r = session.sendMany(commands);
+        const lines = r.steps.map((s, i) => {
+          const prompt = s.prompt === 'command' ? '' : ` [${s.prompt}]`;
+          return `${i + 1}. ${s.command} -> ${s.location} (turn ${s.turns})${prompt}`;
+        });
+        if (r.skipped > 0) lines.push(`(game over: ${r.skipped} command(s) not run)`);
+        return ok(`${lines.join('\n')}\n\n--- final output ---\n${r.final.text}\n${footer(r.final)}`);
       } catch (e) {
         return fail(e);
       }

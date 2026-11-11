@@ -3,7 +3,7 @@
     "advent": {
       "command": "npx",
       "args": ["tsx", "tools/advent-mcp/server.ts"],
-      "autoApprove": ["new_game", "send_command", "get_state", "ask_ghost"],
+      "autoApprove": ["new_game", "send_command", "send_commands", "get_state", "ask_ghost"],
       "disabled": false
     }
   }

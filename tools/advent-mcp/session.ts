@@ -12,6 +12,7 @@ import {
   CHASM,
   CHEST,
   DRAGON,
+  DRAGON_BLOODLESS,
   DRAGON_DEAD,
   GRATE,
   GRATE_OPEN,
@@ -78,9 +79,45 @@ export interface TurnResult {
   turns: number;
 }
 
+export const MAX_BATCH = 60;
+
+export interface BatchStep {
+  command: string;
+  /** Room name after the command (the engine's location, even if dark). */
+  location: string;
+  turns: number;
+  prompt: PromptKind;
+}
+
+export interface BatchResult {
+  steps: BatchStep[];
+  /** Result of the last command that ran. */
+  final: TurnResult;
+  /** Commands not run because the game ended first. */
+  skipped: number;
+}
+
 export type GhostResult =
   | { ghost: true; rule: string; hint: string }
   | { ghost: false; message: string };
+
+/**
+ * The seed an in-game "SEED n" command sets, or undefined when the line is not
+ * a two-word SEED command. Mirrors the engine: C strtol on the second word
+ * (leading sign, digits, anything else gives 0, saturating at the 64-bit long
+ * range), then set_seed keeps the low 32 bits (`seedval | 0`).
+ */
+export function parseSeedCommand(line: string): number | undefined {
+  const words = line.trim().split(/\s+/);
+  if (words.length !== 2 || words[0]!.toLowerCase() !== 'seed') return undefined;
+  const m = /^([+-]?)(\d+)/.exec(words[1]!);
+  let v = m === null ? 0n : BigInt(m[2]!) * (m[1] === '-' ? -1n : 1n);
+  const LONG_MAX = 2n ** 63n - 1n;
+  const LONG_MIN = -(2n ** 63n);
+  if (v > LONG_MAX) v = LONG_MAX;
+  if (v < LONG_MIN) v = LONG_MIN;
+  return Number(BigInt.asIntN(32, v));
+}
 
 function locationName(loc: number): string {
   const def = LOCATIONS[loc];
@@ -159,9 +196,46 @@ export class GameSession {
     if (state.session.status === 'over') {
       throw new SessionError('The game is over. Call new_game to start again.');
     }
+    const pendingBefore = state.session.pending.k;
     const r = step(state, text, this.env());
     this.state = r.state;
+    if (pendingBefore === 'command') {
+      const set = parseSeedCommand(text);
+      if (set !== undefined) this.seed = set;
+    }
     return this.result(this.absorb(r.events));
+  }
+
+  /**
+   * Several lines in order. Validates the whole batch before running any of
+   * it; stops early (without error) if the game ends partway through.
+   */
+  sendMany(commands: readonly string[]): BatchResult {
+    this.require();
+    if (!Array.isArray(commands) || commands.length === 0) {
+      throw new SessionError('Give at least one command.');
+    }
+    if (commands.length > MAX_BATCH) {
+      throw new SessionError(`Too many commands: at most ${MAX_BATCH} per call.`);
+    }
+    commands.forEach((c, i) => {
+      if (typeof c !== 'string') throw new SessionError(`Command ${i + 1} must be text.`);
+      if (c.length > MAX_INPUT_LENGTH) {
+        throw new SessionError(`Command ${i + 1} too long: at most ${MAX_INPUT_LENGTH} characters.`);
+      }
+    });
+    const steps: BatchStep[] = [];
+    let last: TurnResult | undefined;
+    for (const command of commands) {
+      if (this.require().session.status === 'over') break;
+      last = this.send(command);
+      const g = this.require().game;
+      steps.push({ command, location: locationName(g.loc), turns: last.turns, prompt: last.prompt });
+    }
+    if (last === undefined) {
+      throw new SessionError('The game is over. Call new_game to start again.');
+    }
+    return { steps, final: last, skipped: commands.length - steps.length };
   }
 
   /**
@@ -193,7 +267,12 @@ export class GameSession {
         grateUnlocked: g.objects[GRATE]!.prop === GRATE_OPEN,
         birdCaged: g.objects[BIRD]!.prop === BIRD_CAGED,
         snakeGone: g.objects[SNAKE]!.prop === SNAKE_CHASED,
-        dragonDead: g.objects[DRAGON]!.prop === DRAGON_DEAD,
+        dragonDead: (() => {
+          // DRAGON_DEAD, or DRAGON_BLOODLESS once the player has also DRINKed the
+          // dragon's remains: both mean the dragon is dead (C: actions.c, drink).
+          const p = g.objects[DRAGON]!.prop;
+          return p === DRAGON_DEAD || p === DRAGON_BLOODLESS;
+        })(),
         trollGone: g.objects[TROLL]!.prop === TROLL_GONE,
         bridgeWrecked: g.objects[CHASM]!.prop === BRIDGE_WRECKED,
         pirateSeen: g.dwarves[NDWARVES]!.seen,
