@@ -24,6 +24,13 @@ npm run check:dist # verify dist/ contents (pages, VT323 font + OFL.txt, credits
 npm run test       # vitest --run (single run)
 ```
 
+### Kiro custom agents
+
+Two workspace agents live in `.kiro/agents/` (Kiro CLI V3 format; list them with `kiro-cli agent list`, run one with `kiro-cli chat --agent <name>`):
+
+- `playtester`: plays the game through the `advent` MCP tools only (`.kiro/settings/mcp.json`) and audits the ghost hints as good / generic / misleading. It reads files and writes only under `.kiro/specs/kiro-tooling/`; it never edits source.
+- `ghost-writer`: edits the narrator and hint lines in `src/haunt/` (`hints.ts`, `hint-view.ts`, `lines.ts`, `voice-lines.ts`, `yes-no.ts`, `spoken-word-rule.ts`), loads `.kiro/steering/product.md`, and may run only `npx vitest --run tests/haunt/line-lint.test.ts` (after every edit). New or changed lines need `npm run gen:voice` afterwards.
+
 ### Narrator voice audio
 
 The narrator's spoken lines are pre-generated MP3 files under `public/voice/` (plus `manifest.json`), made once by `npm run gen:voice` with Cloudflare Workers AI MeloTTS. Until that is run, the voice is simply inactive (no VOICE button).

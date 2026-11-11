@@ -48,3 +48,37 @@ Route: upstream win430.log (seed 1318612053), haunted mode, hints from `ask_ghos
 ## Voice audio: regenerated
 
 - `npm run gen:voice` generated the 15 new lines and removed 1 stale file (114 files, 3.85 MB, under the 4 MB cap). The voice manifest sync test passes.
+
+## Re-check via playtester agent
+
+Result: the advent MCP server I connected to is STALE. It still runs the old hint table and old session code, so the 7 new rules could not be confirmed over MCP.
+
+| Checkpoint | Location | Expected rule | Rule returned | First-variant hint | Verdict |
+|---|---|---|---|---|---|
+| Title prompt (new_game haunted, seed 1) | "Would you like instructions?", turn 0 | titlePrompt | start | "Start with the little brick building. Houses in 1976 held useful things like lamps and snacks and keys. Mine held a fan and a regret." | misleading (wrong rule; building advice at a yes/no prompt; stale server) |
+| Plover Room (no, seed N, e, plugh, plove) | Plover Room, emerald in view, turn 3 | plover | fallback | "I have no idea what you should do. I have been dead since 1977 and my advice is dated. Try looking, then try going somewhere." | generic (old fallback; stale server) |
+| get_state seed after in-game "seed 1318612053" | Plover Room, turn 3 | seed 1318612053 | seed 1 | n/a | fail (old session code still reports the new_game seed) |
+| mists, danger, foeSaid, repoRod, repoBlast, maze (both kinds), dragonDead x2 | not reached | n/a | n/a | n/a | not verified (stopped once staleness was proven) |
+
+Verdict: the server needs a restart so it loads the current src/haunt/hints.ts and the session.ts fixes; the two probes above reproduce the pre-fix behaviour exactly.
+Nothing is confirmed over stdio yet; the earlier "After" column (GameSession replay) still stands unverified through MCP.
+
+### Re-check over a fresh stdio MCP connection
+
+The playtester agent reached the session's long-running `advent` server, which was stale (see above). To get a truly fresh server I spawned `tools/advent-mcp/server.ts` over real stdio with the MCP SDK client (seed 1, haunted, route from `win430.log`, `BLAST` not sent) and called `new_game`, `send_command`, `get_state` and `ask_ghost` against it. The temporary client script was deleted afterwards. Every expected rule returned:
+
+| Checkpoint | Location | Rule returned | Hint | Verdict |
+|---|---|---|---|---|
+| Title prompt | In front of building, turn 0 | titlePrompt | "That is a yes or no question. YES gets you the rules, NO gets you the cave. I have waited a long time for you to pick one, so please do." | good |
+| Plover Room | Plover Room, turn 3 | plover | "Green glow, an egg-sized emerald, and a tunnel west that hates luggage. Work out what to leave behind before you try the squeeze." | good |
+| Hall of Mists | Hall of Mists, turn 72 | mists | "Hall of Mists. Stairs up, a gap to the west, a low room south. Some bridges get built by waving at the right object." | good |
+| Dwarf + ogre | Large chamber, turn 109 | danger | "Dwarves throw knives and ogres block doors. Your problems sometimes solve each other, if you pick the right target at the right moment." | good |
+| Maze, "all different" | Turn 116 | maze | "Maze. Whatever the room claims, you will not tell them apart by looking. Leave something lying in each one. Clutter is a navigation system." | good (no longer contradicts the room) |
+| Maze, "all alike" | Turn 131 | maze | same line | good |
+| After FEE FIE FOE | Junction with warm walls, turn 289 | foeSaid | "FEE, FIE, FOE. That poem has four lines and I am not saying the last one for you. Finish the verse." | good |
+| Repository, rod still here | SW end, turn 344 | repoRod | "One rod in here is dynamite wearing a disguise. Carry it a good way along the mirror, then walk back without it." | good |
+| Repository, rod parked | SW end, turn 348 | repoBlast | "Rod set down, and you are a safe distance away. The word you want is short, loud, and rhymes with last. Do try to enjoy the ending." | good |
+
+State fixes over the same connection: `get_state.seed` was 1318612053 after the in-game `seed 1318612053` (it was 1 before the fix), and `flags.dragonDead` was true after `drink blood` (turn 79). The moment right after `kill dragon` + `yes` was not sampled over MCP; `tests/tools/session.test.ts` covers it (false before, true after `yes`, still true after `drink blood`).
+
+Verdict: all 7 new rules and the reworded maze rule fire on the intended checkpoints over a fresh MCP connection, with no misleading hints. The earlier stale-server result above is superseded; restart the attached `advent` server to make the in-session MCP tools match.
