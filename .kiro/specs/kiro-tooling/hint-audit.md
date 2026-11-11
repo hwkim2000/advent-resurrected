@@ -82,3 +82,24 @@ The playtester agent reached the session's long-running `advent` server, which w
 State fixes over the same connection: `get_state.seed` was 1318612053 after the in-game `seed 1318612053` (it was 1 before the fix), and `flags.dragonDead` was true after `drink blood` (turn 79). The moment right after `kill dragon` + `yes` was not sampled over MCP; `tests/tools/session.test.ts` covers it (false before, true after `yes`, still true after `drink blood`).
 
 Verdict: all 7 new rules and the reworded maze rule fire on the intended checkpoints over a fresh MCP connection, with no misleading hints. The earlier stale-server result above is superseded; restart the attached `advent` server to make the in-session MCP tools match.
+
+## Playtester agent run
+
+Route: `reference/open-adventure/tests/win430.log`, new_game haunted, seed 1, then the in-game `seed 1318612053` line. Played in batches of at most 60 lines and checked position after each batch. Stopped before BLAST (not sent). This run used the attached `advent` MCP server; it returned the new rule ids, so it is no longer the stale one.
+
+| Checkpoint | Location | Rule | Hint | Verdict |
+|---|---|---|---|---|
+| Title prompt | "Would you like instructions?", turn 0 | titlePrompt | "That is a yes or no question. YES gets you the rules, NO gets you the cave. I have waited a long time for you to pick one, so please do." | good (fits the yes/no prompt, in voice, no spoilers) |
+| Plover Room | Plover Room, emerald in view, turn 3 | plover | "Green glow, an egg-sized emerald, and a tunnel west that hates luggage. Work out what to leave behind before you try the squeeze." | good (names the room and the carry-limit puzzle without giving the answer) |
+| Hall of Mists | Hall of Mists, turn 69 (cage with bird, nugget not yet taken) | mists | "Hall of Mists. Stairs up, a gap to the west, a low room south. Some bridges get built by waving at the right object." | misleading (minor: the room text says the wide staircase leads downward; the way up is the dome steps. West and south are right, and the rod nudge is good) |
+| Dwarf + ogre | Large chamber, passages west and north, turn 109, dwarf and ogre both in the room | danger | "Dwarves throw knives and ogres block doors. Your problems sometimes solve each other, if you pick the right target at the right moment." | good (fires with both threats on screen, nudges at the target choice without spelling it out) |
+| After FEE FIE FOE | Junction with warm walls, turn 289, bear and chain in hand | foeSaid | "FEE, FIE, FOE. That poem has four lines and I am not saying the last one for you. Finish the verse." | good (right word count, points at FOO, funny) |
+| Endgame, before BLAST | SW end of repository, turn 348, score 391, rod set down at NE end, lamp off, caveClosing | repoBlast | "Rod set down, and you are a safe distance away. The word you want is short, loud, and rhymes with last. Do try to enjoy the ending." | good (matches the state exactly; a strong nudge but still not the literal word) |
+
+Summary: 5 good, 1 misleading (minor), 0 generic. No fallback rule fired at any of the six checkpoints.
+
+Suggested fix for the Hall of Mists line (not applied; I may not edit source): change "Stairs up" to "Stairs down" or "a dome up", for example "Hall of Mists. Stairs down, steps up the dome, a gap to the west, a low room south. Some bridges get built by waving at the right object." Voice audio would need regenerating.
+
+State at the end: `get_state` reports location sw end, empty inventory, score 391, turn 348, `caveClosing` true, `dragonDead` true, `seed` 1318612053, lives used 0.
+
+Not verified: the BLAST ending and the 430 score (stopped before BLAST on purpose); the other maze, Bedquilt, treasureAbove and start/building checkpoints (not requested); hint variants beyond the first one.
